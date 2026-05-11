@@ -1,0 +1,31 @@
+# Large sequencing data files — never commit
+*.bam
+*.bai
+*.fastq
+*.fastq.gz
+*.fq
+*.fq.gz
+*.cram
+
+# Large output files
+samtools_coverage_all.txt
+bam_qc_report.txt
+slurm_*.log
+slurm_*.err
+
+# R temporary files
+.Rhistory
+.RData
+.Rproj.user/
+
+# Conda environments
+*.conda
+envs/
+
+# System files
+.DS_Store
+__pycache__/
+
+# Any file with patient metadata
+*metadata*clinical*
+*patient_ids*
