@@ -8,7 +8,6 @@
 *.cram
 
 # Large output files
-samtools_coverage_all.txt
 bam_qc_report.txt
 slurm_*.log
 slurm_*.err
