@@ -3,7 +3,7 @@
 **Thesis title:** Shallow whole genome sequencing of ctDNA in 
 T-cell lymphoma focusing on copy number variations and fragmentomics
 
-**Author:** [Noor Shaban]  
+**Author:** Noor Shaban 
 **Institution:** University of Leicester  
 **Year:** 2026  
 
