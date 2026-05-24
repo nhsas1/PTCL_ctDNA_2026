@@ -28,3 +28,17 @@ __pycache__/
 # Any file with patient metadata
 *metadata*clinical*
 *patient_ids*
+
+# ichorCNA large outputs — never push these
+*.wig
+*.RData
+*.bam
+*.bai
+*_CNA_chr*.pdf
+*_genomeWide*.pdf
+*_bias.pdf
+*_correct.pdf
+*_tpdf.pdf
+*_all_sols.pdf
+*.cna.seg
+*.correctedDepth.txt
