@@ -1,0 +1,33 @@
+Sample	Tumor Fraction	Ploidy
+B3_S04	0.04876	2.035
+
+
+B3_S04
+Gender:	unknown
+Tumor Fraction:	0.04876
+Ploidy:	2.035
+Subclone Fraction:	0.9395
+Fraction Genome Subclonal:	0.07354
+Fraction CNA Subclonal:	0.3076
+Coverage:	NA
+ChrY coverage fraction:	NA
+Student's t mean: -0.026, -0.00086, 0.023, 0.047, 0.07, -0.024, 0.022
+Student's t precision: 1900, 1400, 930, 2700, 1200, 480, 490
+Gamma Rate Init:	0.00068
+GC-Map correction MAD:	0.05087
+
+
+init	n_est	phi_est	BIC	Frac_genome_subclonal	Frac_CNA_subclonal	loglik
+n0.5-p2	0.69	2.011	NA	0.087	1	3935
+n0.5-p3	0.82	3.025	NA	0.026	0.026	3375
+n0.6-p2	0.69	2.011	NA	0.087	1	3936
+n0.6-p3	0.82	3.025	NA	0.026	0.026	3374
+n0.7-p2	0.7	2.013	NA	0.087	1	3939
+n0.7-p3	0.82	3.024	NA	0.026	0.026	3380
+n0.8-p2	0.84	2.037	NA	0.13	0.67	4050
+n0.8-p3	0.84	3.02	NA	0.045	0.046	3465
+n0.9-p2	0.9	2.064	NA	0.082	0.47	4061
+n0.9-p3	0.9	3.066	NA	0.031	0.031	3507
+n0.95-p2	0.94	2.122	NA	0.077	0.4	4079
+n0.99-p2	0.95	2.035	NA	0.074	0.31	4135
+n0.99-p3	0.97	2.173	NA	0.067	0.32	4123
