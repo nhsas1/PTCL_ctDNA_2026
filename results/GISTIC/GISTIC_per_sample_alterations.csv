@@ -1,0 +1,58 @@
+sample,peak_label,peak_type,strength,q_val
+B1_S01,11q24.3 Amp (ETS1/FLI1),Amplification,High amplitude,0.16183
+B1_S01,1q32.1 Amp,Amplification,High amplitude,0.21221
+B1_S01,8q24.3 Amp (MYC),Amplification,High amplitude,0.16183
+B1_S02,11q24.3 Amp (ETS1/FLI1),Amplification,High amplitude,0.16183
+B1_S02,1q32.1 Amp,Amplification,High amplitude,0.21221
+B1_S02,4q35.1 Del (FAT1/CASP3/IRF2),Deletion,Moderate amplitude,4.7085e-7
+B1_S05,11q24.3 Amp (ETS1/FLI1),Amplification,High amplitude,0.16183
+B1_S05,2q37.3 Del (PDCD1),Deletion,Moderate amplitude,0.16058
+B1_S05,4q35.1 Del (FAT1/CASP3/IRF2),Deletion,Moderate amplitude,4.7085e-7
+B2_S01,11q24.3 Amp (ETS1/FLI1),Amplification,High amplitude,0.16183
+B2_S01,8q24.3 Amp (MYC),Amplification,High amplitude,0.16183
+B2_S01,7q11.22 Del,Deletion,Moderate amplitude,0.048379
+B2_S02,1q32.1 Amp,Amplification,High amplitude,0.21221
+B2_S02,4q35.1 Del (FAT1/CASP3/IRF2),Deletion,Moderate amplitude,4.7085e-7
+B2_S03,11q24.3 Amp (ETS1/FLI1),Amplification,High amplitude,0.16183
+B2_S03,1q32.1 Amp,Amplification,High amplitude,0.21221
+B2_S03,8q24.3 Amp (MYC),Amplification,High amplitude,0.16183
+B2_S03,4q35.1 Del (FAT1/CASP3/IRF2),Deletion,Moderate amplitude,4.7085e-7
+B2_S04,11q24.3 Amp (ETS1/FLI1),Amplification,High amplitude,0.16183
+B2_S04,1q32.1 Amp,Amplification,High amplitude,0.21221
+B2_S04,8q24.3 Amp (MYC),Amplification,High amplitude,0.16183
+B2_S05,1q32.1 Amp,Amplification,High amplitude,0.21221
+B2_S05,4q35.1 Del (FAT1/CASP3/IRF2),Deletion,Moderate amplitude,4.7085e-7
+B2_S06,4q35.1 Del (FAT1/CASP3/IRF2),Deletion,Moderate amplitude,4.7085e-7
+B2_S07,11q24.3 Amp (ETS1/FLI1),Amplification,High amplitude,0.16183
+B2_S07,1q32.1 Amp,Amplification,High amplitude,0.21221
+B2_S07,8q24.3 Amp (MYC),Amplification,High amplitude,0.16183
+B2_S08,1q21.3 Del (broad),Deletion,Moderate amplitude,0.012714
+B2_S08,2q37.3 Del (PDCD1),Deletion,Moderate amplitude,0.16058
+B2_S08,4q35.1 Del (FAT1/CASP3/IRF2),Deletion,Moderate amplitude,4.7085e-7
+B2_S12,1q32.1 Amp,Amplification,High amplitude,0.21221
+B2_S12,8q24.3 Amp (MYC),Amplification,High amplitude,0.16183
+B2_S12,4q35.1 Del (FAT1/CASP3/IRF2),Deletion,Moderate amplitude,4.7085e-7
+B2_S15,2q37.3 Del (PDCD1),Deletion,Moderate amplitude,0.16058
+B2_S15,7q11.22 Del,Deletion,Moderate amplitude,0.048379
+B2_S16,11q24.3 Amp (ETS1/FLI1),Amplification,High amplitude,0.16183
+B2_S16,1q32.1 Amp,Amplification,High amplitude,0.21221
+B2_S16,8q24.3 Amp (MYC),Amplification,High amplitude,0.16183
+B2_S16,2q37.3 Del (PDCD1),Deletion,Moderate amplitude,0.16058
+B2_S16,4q35.1 Del (FAT1/CASP3/IRF2),Deletion,Moderate amplitude,4.7085e-7
+B2_S16,7q11.22 Del,Deletion,Moderate amplitude,0.048379
+B3_S01,11q24.3 Amp (ETS1/FLI1),Amplification,High amplitude,0.16183
+B3_S01,8q24.3 Amp (MYC),Amplification,High amplitude,0.16183
+B3_S01,4q35.1 Del (FAT1/CASP3/IRF2),Deletion,Moderate amplitude,4.7085e-7
+B3_S04,11q24.3 Amp (ETS1/FLI1),Amplification,High amplitude,0.16183
+B3_S04,1q32.1 Amp,Amplification,High amplitude,0.21221
+B3_S04,4q35.1 Del (FAT1/CASP3/IRF2),Deletion,Moderate amplitude,4.7085e-7
+B3_S05,11q24.3 Amp (ETS1/FLI1),Amplification,High amplitude,0.16183
+B3_S05,1q32.1 Amp,Amplification,High amplitude,0.21221
+B3_S05,4q35.1 Del (FAT1/CASP3/IRF2),Deletion,Moderate amplitude,4.7085e-7
+B3_S08,2q37.3 Del (PDCD1),Deletion,Moderate amplitude,0.16058
+B3_S08,7q11.22 Del,Deletion,Moderate amplitude,0.048379
+B3_S09,2q37.3 Del (PDCD1),Deletion,Moderate amplitude,0.16058
+B3_S12,1q32.1 Amp,Amplification,High amplitude,0.21221
+B3_S12,8q24.3 Amp (MYC),Amplification,Moderate amplitude,0.16183
+B3_S12,2q37.3 Del (PDCD1),Deletion,Moderate amplitude,0.16058
+B3_S12,4q35.1 Del (FAT1/CASP3/IRF2),Deletion,Moderate amplitude,4.7085e-7
