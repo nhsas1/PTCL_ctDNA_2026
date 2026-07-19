@@ -1,0 +1,12 @@
+"metric","value"
+"pooled_pearson_r",0.9659
+"median_per_sample_r",0.9252
+"bland_altman_bias",-0.0012
+"sd_of_differences",0.0306
+"upper_LoA",0.0588
+"lower_LoA",-0.0612
+"proportional_bias_slope",0.03959
+"proportional_bias_pvalue",0
+"pct_within_LoA",94.77
+"n_samples",34
+"n_bins_pooled",80240
