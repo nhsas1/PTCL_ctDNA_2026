@@ -1,0 +1,33 @@
+"metric","dataset","test","comparison","n1","n2","statistic","df","p_value","p_adjusted"
+"median_fragment_length","All_samples","Kruskal-Wallis","omnibus (3 groups)",NA,NA,8.22863010775634,2,0.0163371266295514,NA
+"median_fragment_length","All_samples","Wilcoxon pairwise","Below_floor vs Low_TF",13,10,NA,NA,0.333655052564418,0.333655052564418
+"median_fragment_length","All_samples","Wilcoxon pairwise","Below_floor vs High_TF",13,11,NA,NA,0.00969210825278525,0.0290763247583558
+"median_fragment_length","All_samples","Wilcoxon pairwise","Low_TF vs High_TF",10,11,NA,NA,0.039829811696175,0.0597447175442625
+"median_fragment_length","Excluding_B2_S11","Kruskal-Wallis","omnibus (3 groups)",NA,NA,7.33672351040772,2,0.0255182408471331,NA
+"median_fragment_length","Excluding_B2_S11","Wilcoxon pairwise","Below_floor vs Low_TF",12,10,NA,NA,0.485871922804525,0.485871922804525
+"median_fragment_length","Excluding_B2_S11","Wilcoxon pairwise","Below_floor vs High_TF",12,11,NA,NA,0.0159863007718884,0.0479589023156651
+"median_fragment_length","Excluding_B2_S11","Wilcoxon pairwise","Low_TF vs High_TF",10,11,NA,NA,0.039829811696175,0.0597447175442625
+"peak_fragment_length","All_samples","Kruskal-Wallis","omnibus (3 groups)",NA,NA,7.95528404757195,2,0.0187297516182502,NA
+"peak_fragment_length","All_samples","Wilcoxon pairwise","Below_floor vs Low_TF",13,10,NA,NA,0.121780911677408,0.182671367516112
+"peak_fragment_length","All_samples","Wilcoxon pairwise","Below_floor vs High_TF",13,11,NA,NA,0.00778555004242729,0.0233566501272819
+"peak_fragment_length","All_samples","Wilcoxon pairwise","Low_TF vs High_TF",10,11,NA,NA,0.216283072801316,0.216283072801316
+"peak_fragment_length","Excluding_B2_S11","Kruskal-Wallis","omnibus (3 groups)",NA,NA,6.77721410626221,2,0.0337556640131933,NA
+"peak_fragment_length","Excluding_B2_S11","Wilcoxon pairwise","Below_floor vs Low_TF",12,10,NA,NA,0.193227123137937,0.216283072801316
+"peak_fragment_length","Excluding_B2_S11","Wilcoxon pairwise","Below_floor vs High_TF",12,11,NA,NA,0.0127790109860415,0.0383370329581246
+"peak_fragment_length","Excluding_B2_S11","Wilcoxon pairwise","Low_TF vs High_TF",10,11,NA,NA,0.216283072801316,0.216283072801316
+"short_to_long_ratio","All_samples","Kruskal-Wallis","omnibus (3 groups)",NA,NA,7.10947640594699,2,0.0285888584147838,NA
+"short_to_long_ratio","All_samples","Wilcoxon pairwise","Below_floor vs Low_TF",13,10,NA,NA,0.648161906743142,0.648161906743142
+"short_to_long_ratio","All_samples","Wilcoxon pairwise","Below_floor vs High_TF",13,11,NA,NA,0.012879064669346,0.038637194008038
+"short_to_long_ratio","All_samples","Wilcoxon pairwise","Low_TF vs High_TF",10,11,NA,NA,0.0429637442021343,0.0644456163032014
+"short_to_long_ratio","Excluding_B2_S11","Kruskal-Wallis","omnibus (3 groups)",NA,NA,6.3843137254902,2,0.0410831645626214,NA
+"short_to_long_ratio","Excluding_B2_S11","Wilcoxon pairwise","Below_floor vs Low_TF",12,10,NA,NA,0.87175981912824,0.87175981912824
+"short_to_long_ratio","Excluding_B2_S11","Wilcoxon pairwise","Below_floor vs High_TF",12,11,NA,NA,0.0225001812025638,0.0644456163032014
+"short_to_long_ratio","Excluding_B2_S11","Wilcoxon pairwise","Low_TF vs High_TF",10,11,NA,NA,0.0429637442021343,0.0644456163032014
+"long_fragment_fraction","All_samples","Kruskal-Wallis","omnibus (3 groups)",NA,NA,3.19056540233959,2,0.202851174131631,NA
+"long_fragment_fraction","All_samples","Wilcoxon pairwise","Below_floor vs Low_TF",13,10,NA,NA,0.250780080444752,0.376170120667128
+"long_fragment_fraction","All_samples","Wilcoxon pairwise","Below_floor vs High_TF",13,11,NA,NA,0.0819275676587014,0.245782702976104
+"long_fragment_fraction","All_samples","Wilcoxon pairwise","Low_TF vs High_TF",10,11,NA,NA,0.886713535883301,0.886713535883301
+"long_fragment_fraction","Excluding_B2_S11","Kruskal-Wallis","omnibus (3 groups)",NA,NA,2.2454866364095,2,0.325385931958055,NA
+"long_fragment_fraction","Excluding_B2_S11","Wilcoxon pairwise","Below_floor vs Low_TF",12,10,NA,NA,0.372837647882665,0.559256471823998
+"long_fragment_fraction","Excluding_B2_S11","Wilcoxon pairwise","Below_floor vs High_TF",12,11,NA,NA,0.131206051343612,0.393618154030835
+"long_fragment_fraction","Excluding_B2_S11","Wilcoxon pairwise","Low_TF vs High_TF",10,11,NA,NA,0.886713535883301,0.886713535883301

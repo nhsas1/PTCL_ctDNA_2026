@@ -1,0 +1,9 @@
+"metric","dataset","n","spearman_rho","p_value"
+"median_fragment_length","All_samples",34,-0.535834314989141,0.00109066006195695
+"median_fragment_length","Excluding_B2_S11",33,-0.51461280556334,0.00218353548998805
+"peak_fragment_length","All_samples",34,-0.482558104941513,0.00384780270265997
+"peak_fragment_length","Excluding_B2_S11",33,-0.458694575662581,0.00725673891951937
+"short_to_long_ratio","All_samples",34,0.501604278074866,0.00282749393594049
+"short_to_long_ratio","Excluding_B2_S11",33,0.478609625668449,0.00529864153223028
+"long_fragment_fraction","All_samples",34,-0.206818054636336,0.240563331944321
+"long_fragment_fraction","Excluding_B2_S11",33,-0.159055406356585,0.376631372156717
