@@ -295,5 +295,9 @@ ggsave(filename = file.path(results_dir, "GISTIC_frequency.png"),
 
 cat("Plots saved:\n")
 cat(sprintf("  %sGISTIC_landscape.pdf\n", results_dir))
+cat(sprintf("  %sGISTIC_landscape.png\n", results_dir))
+cat(sprintf("  %sGISTIC_landscape.png\n", results_dir))
 cat(sprintf("  %sGISTIC_frequency.pdf\n", results_dir))
+cat(sprintf("  %sGISTIC_frequency.png\n", results_dir))
+cat(sprintf("  %sGISTIC_frequency.png\n", results_dir))
 cat("Done.\n")
