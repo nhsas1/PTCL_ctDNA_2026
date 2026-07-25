@@ -11,12 +11,11 @@ B2_S06	9	yes
 B2_S07	34	yes
 B2_S08	31	yes
 B2_S12	39	yes
-B2_S15	33	yes
+B2_S15	34	yes
 B2_S16	48	yes
 B3_S01	24	yes
 B3_S04	23	yes
 B3_S05	20	yes
 B3_S06	7	yes
 B3_S08	47	yes
-B3_S09	19	yes
-B3_S12	37	yes
+B3_S09	18	yes
