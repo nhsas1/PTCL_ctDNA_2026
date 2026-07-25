@@ -42,3 +42,6 @@ __pycache__/
 *_all_sols.pdf
 *.cna.seg
 *.correctedDepth.txt
+*.OLD_JUNE17_BACKUP
+*.ORIGINAL
+*.bak_*
