@@ -4,8 +4,15 @@ library(ggplot2)
 library(ggrepel)
 library(patchwork)
 
-scores_file  <- "/scratch/alice/n/nhsas1/PTCL/GISTIC/output/scores.gistic"
-results_dir  <- "/scratch/alice/n/nhsas1/PTCL/GISTIC/output/"
+scores_file   <- "/scratch/alice/n/nhsas1/PTCL/GISTIC/output/scores.gistic"
+lesions_file  <- "/scratch/alice/n/nhsas1/PTCL/GISTIC/output/all_lesions.conf_99.txt"
+seg_input_file <- "/scratch/alice/n/nhsas1/PTCL/GISTIC/input/PTCL_GISTIC_input.seg"
+results_dir   <- "/scratch/alice/n/nhsas1/PTCL/GISTIC/output/"
+
+n_samples <- read_tsv(seg_input_file, show_col_types = FALSE) %>%
+  summarise(n = n_distinct(Sample)) %>%
+  pull(n)
+cat(sprintf("Detected n = %d samples from GISTIC input file\n", n_samples))
 
 scores <- read_tsv(scores_file, show_col_types = FALSE) %>%
   rename(
@@ -48,31 +55,38 @@ chr_rects <- chr_sizes %>%
 amp_data <- scores %>% filter(type == "Amp")
 del_data <- scores %>% filter(type == "Del")
 
-peak_positions_amp <- amp_data %>%
-  group_by(chr) %>%
-  slice_max(log10q, n = 1, with_ties = FALSE) %>%
-  ungroup() %>%
-  select(chr, genome_pos, log10q)
+# Peak labels read dynamically from all_lesions.conf_99.txt
+# (previously hardcoded to the old n=21 peak set)
+lesions_raw <- read_tsv(lesions_file, show_col_types = FALSE)
 
-peak_positions_del <- del_data %>%
-  group_by(chr) %>%
-  slice_max(log10q, n = 1, with_ties = FALSE) %>%
-  ungroup() %>%
-  select(chr, genome_pos, log10q)
+peaks <- lesions_raw %>%
+  filter(!grepl("CN values", `Unique Name`)) %>%
+  mutate(
+    peak_type = ifelse(grepl("Amplification", `Unique Name`), "Amp", "Del"),
+    cytoband  = trimws(Descriptor),
+    qval      = as.numeric(`q values`),
+    chr       = as.integer(sub("chr(\\d+):.*", "\\1", `Wide Peak Limits`)),
+    coords    = sub("^chr\\d+:", "", `Wide Peak Limits`),
+    coords    = trimws(sub("\\(.*", "", coords)),
+    peak_start = as.numeric(sub("-.*", "", coords)),
+    peak_end   = as.numeric(sub(".*-", "", coords)),
+    mid        = (peak_start + peak_end) / 2
+  ) %>%
+  filter(!is.na(chr), chr %in% 1:22) %>%
+  left_join(chr_sizes, by = "chr") %>%
+  mutate(genome_pos = mid + cum_start,
+         log10q     = -log10(qval)) %>%
+  select(peak_type, chr, cytoband, genome_pos, log10q, qval)
 
-amp_peaks_label <- data.frame(
-  chr      = c(1L, 8L, 11L),
-  cytoband = c("1q32.1", "8q24.3\nMYC", "11q24.3\nETS1/FLI1"),
-  stringsAsFactors = FALSE
-) %>%
-  left_join(peak_positions_amp, by = "chr")
+cat("\nPeaks that will be labelled on the plots:\n")
+print(as.data.frame(peaks))
 
-del_peaks_label <- data.frame(
-  chr      = c(1L, 2L, 4L, 7L),
-  cytoband = c("1q21.3", "2q37.3\nPDCD1/INPP5D", "4q35.1\nCASP3/FAT1/IRF2", "7q11.22"),
-  stringsAsFactors = FALSE
-) %>%
-  left_join(peak_positions_del, by = "chr")
+amp_peaks_label <- peaks %>% filter(peak_type == "Amp")
+del_peaks_label <- peaks %>% filter(peak_type == "Del")
+
+if (nrow(amp_peaks_label) == 0) {
+  cat("\nNo significant amplification peaks - amplification plot will show the curve with no labelled peaks.\n")
+}
 
 palette_amp <- "#C0392B"
 palette_del <- "#2471A3"
@@ -199,7 +213,7 @@ p_del <- ggplot() +
   labs(x       = "Chromosome",
        y       = expression(-log[10](q)),
        title   = "Deletions",
-       caption = "GISTIC2 | hg38 | q < 0.25 threshold | n = 21 detectable PTCL ctDNA samples") +
+       caption = sprintf("GISTIC2 | hg38 | q < 0.25 threshold | n = %d detectable PTCL ctDNA samples", n_samples)) +
   theme_classic(base_size = 11) +
   theme(
     axis.text.x   = element_text(size = 8, colour = "grey30"),
@@ -216,7 +230,7 @@ p_del <- ggplot() +
 p_combined <- p_amp / p_del +
   plot_annotation(
     title    = "GISTIC2 Copy Number Significance Landscape",
-    subtitle = "PTCL ctDNA cohort | sWGS plasma cfDNA | detectable samples (TF >= 3%, n = 21)",
+    subtitle = sprintf("PTCL ctDNA cohort | sWGS plasma cfDNA | detectable samples (TF >= 3%%, n = %d)", n_samples),
     theme    = theme(
       plot.title    = element_text(face = "bold", size = 14, hjust = 0),
       plot.subtitle = element_text(size = 10, colour = "grey40", hjust = 0),
@@ -259,7 +273,7 @@ p_freq <- ggplot() +
   labs(x       = "Chromosome",
        y       = "Sample frequency",
        title   = "Copy Number Alteration Frequency",
-       subtitle = "Red = gain  |  Blue = loss  |  PTCL ctDNA cohort (n = 21)",
+       subtitle = sprintf("Red = gain  |  Blue = loss  |  PTCL ctDNA cohort (n = %d)", n_samples),
        caption = "GISTIC2 | hg38 | ichorCNA Corrected_Copy_Number") +
   theme_classic(base_size = 11) +
   theme(
