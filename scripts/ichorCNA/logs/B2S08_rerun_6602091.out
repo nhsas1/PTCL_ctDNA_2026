@@ -1,0 +1,4 @@
+Re-running ichorCNA for B2_S08 with constrained ploidy=2
+Started: Mon Jun 29 12:57:01 BST 2026
+Fatal error: cannot open file '/scratch/alice/n/nhsas1/PTCL/scripts/ichorCNA/ichorCNA/scripts/runIchorCNA.R': No such file or directory
+Finished: Mon Jun 29 12:57:01 BST 2026

@@ -1,0 +1,45 @@
+Job started: Sun Jul  5 15:46:27 BST 2026
+Processed: B1_S01 | bins: 2360 | r: 0.925 
+Processed: B1_S02 | bins: 2360 | r: 0.926 
+Processed: B1_S03 | bins: 2360 | r: 0.904 
+Processed: B1_S04 | bins: 2360 | r: 0.887 
+Processed: B1_S05 | bins: 2360 | r: 0.921 
+Processed: B2_S01 | bins: 2360 | r: 0.957 
+Processed: B2_S02 | bins: 2360 | r: 0.881 
+Processed: B2_S03 | bins: 2360 | r: 0.953 
+Processed: B2_S04 | bins: 2360 | r: 0.994 
+Processed: B2_S05 | bins: 2360 | r: 0.988 
+Processed: B2_S06 | bins: 2360 | r: 0.961 
+Processed: B2_S07 | bins: 2360 | r: 0.983 
+Processed: B2_S08 | bins: 2360 | r: 0.99 
+Processed: B2_S09 | bins: 2360 | r: 0.87 
+Processed: B2_S10 | bins: 2360 | r: 0.897 
+Processed: B2_S11 | bins: 2360 | r: 0.909 
+Processed: B2_S12 | bins: 2360 | r: 0.949 
+Processed: B2_S13 | bins: 2360 | r: 0.81 
+Processed: B2_S14 | bins: 2360 | r: 0.895 
+Processed: B2_S15 | bins: 2360 | r: 0.982 
+Processed: B2_S16 | bins: 2360 | r: 0.979 
+Processed: B3_S01 | bins: 2360 | r: 0.92 
+Processed: B3_S02 | bins: 2360 | r: 0.894 
+Processed: B3_S03 | bins: 2360 | r: 0.867 
+Processed: B3_S04 | bins: 2360 | r: 0.928 
+Processed: B3_S05 | bins: 2360 | r: 0.896 
+Processed: B3_S06 | bins: 2360 | r: 0.976 
+Processed: B3_S07 | bins: 2360 | r: 0.936 
+Processed: B3_S08 | bins: 2360 | r: 0.991 
+Processed: B3_S09 | bins: 2360 | r: 0.987 
+Processed: B3_S10 | bins: 2360 | r: 0.893 
+Processed: B3_S11 | bins: 2360 | r: 0.726 
+Processed: B3_S12 | bins: 2360 | r: 0.975 
+Processed: B3_S13 | bins: 2360 | r: 0.729 
+
+=== Bland-Altman summary ===
+Bias: -0.0012 log2 units
+Limits of agreement: -0.0612 to 0.0588 
+Proportional bias slope: 0.03959 | p = 0 
+Percent within LoA: 94.77 
+Pooled r: 0.9659 | Median per-sample r: 0.9252 
+Outputs saved to: /scratch/alice/n/nhsas1/ptcl_ctdna_thesis/results/ichorCNA/qdnaseq_concordance 
+Exit code: 0
+Job finished: Sun Jul  5 15:48:51 BST 2026
