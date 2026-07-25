@@ -1,8 +1,4 @@
 peak_label,peak_type,q_val,n,freq_pct
-1q32.1 Amp,Amplification,0.21221,12,57.1
-11q24.3 Amp (ETS1/FLI1),Amplification,0.16183,11,52.4
-8q24.3 Amp (MYC),Amplification,0.16183,9,42.9
-4q35.1 Del (FAT1/CASP3/IRF2),Deletion,4.7085e-7,13,61.9
-2q37.3 Del (PDCD1),Deletion,0.16058,7,33.3
-7q11.22 Del,Deletion,0.048379,4,19
-1q21.3 Del (broad),Deletion,0.012714,1,4.8
+4q35.1,Deletion,3.9035e-8,12,60
+1q43,Deletion,0.045183,7,35
+1p35.3,Deletion,0.0070355,6,30
