@@ -1,4 +1,9 @@
 #!/bin/bash
+# Runs export_rascal_input.R for Batches 1-2. Despite the job name, the output feeds the
+# QDNAseq-vs-ichorCNA concordance analysis, not RASCAL; see the R script header.
+#
+# 4 hours and 32G for a pass over 21 BAMs that stops before segmentation.
+# cpus-per-task is requested but unused, as the R script is single-threaded.
 #SBATCH --job-name=RASCAL_export
 #SBATCH --output=/scratch/alice/n/nhsas1/PTCL/scripts/logs/rascal_export_%j.out
 #SBATCH --error=/scratch/alice/n/nhsas1/PTCL/scripts/logs/rascal_export_%j.err

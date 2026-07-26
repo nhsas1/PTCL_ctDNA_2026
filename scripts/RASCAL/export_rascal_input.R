@@ -1,3 +1,15 @@
+# Export bin-level relative copy number for Batches 1-2 as plain TSV.
+#
+# NAMING WARNING: despite the filename and directory, RASCAL does not read these files.
+# Both RASCAL scripts read the QDNAseq .seg and .igv files directly and re-linearise them
+# themselves. The only consumers of *_rascal_input.txt in this repository are the two
+# plot_qdnaseq_ichorcna_concordance scripts, so what this produces is the QDNAseq side of
+# the QDNAseq-vs-ichorCNA concordance analysis. Names kept for now because renaming touches
+# paths in several scripts; see the repository cleanup proposal.
+#
+# Batch 3 equivalent is scripts/QDNAseq/export_rascal_input_batch3.R, which sits in a
+# different directory from this one.
+
 .libPaths(c("/home/n/nhsas1/R/library", .libPaths()))
 library(QDNAseq)
 library(Biobase)
@@ -34,8 +46,9 @@ for (i in seq_len(nrow(metadata))) {
     copyNumbersNormalized <- normalizeBins(copyNumbers)
     copyNumbersSmooth    <- smoothOutlierBins(copyNumbersNormalized)
 
-    # Export in non-log2 format for RASCAL
-    # This gives relative copy numbers centred on 1.0 (diploid = 1.0)
+    # Export linear relative copy number rather than log2, so a diploid bin sits at 1.0
+    # instead of 0. The concordance script compares these against ichorCNA's copy-number
+    # estimates, which are also linear.
     exportBins(copyNumbersSmooth,
                file=file.path(OUTPUT_DIR, paste0(sample_id, "_rascal_input.txt")),
                format="tsv",

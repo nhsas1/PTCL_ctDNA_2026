@@ -1,4 +1,9 @@
 #!/bin/bash
+# Runs the constrained RASCAL re-fit for B3_S06, B3_S08 and B3_S09.
+#
+# Smaller request than the unconstrained job (1 hour, 16G) because only three samples are
+# processed and the cellularity search range is narrowed. Same logging and exit-status
+# caveats as run_rascal_batch3.slurm.
 #SBATCH --job-name=RASCAL_con_B3
 #SBATCH --partition=short
 #SBATCH --time=01:00:00
