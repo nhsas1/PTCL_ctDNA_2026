@@ -57,6 +57,39 @@ the un-clipped y-axis.
 
 ---
 
+## Evidence gaps — nothing to regenerate, but arguments that cannot currently be checked
+
+**The B3_S12 exclusion cannot be verified from this repository.** B3_S12 is excluded from
+the CNA cohort for ploidy non-identifiability. Its main run fits ploidy 2.831 with a 0.436
+subclone fraction, and two diagnostic re-runs exist to test whether a near-diploid solution
+explains the data comparably (`run_ichorCNA_B3_S12_diploid.slurm`,
+`run_ichorCNA_B3_S12_noSubclone.slurm`).
+
+Those runs completed, but **their params and seg outputs are not committed**, and the
+captured logs echo only the input parameters. Nothing in the repository records what ploidy
+or tumour fraction they produced.
+
+Note also that `--ploidy "c(2)"` sets the *starting* values for ichorCNA's ploidy search,
+not a hard constraint, so a run labelled "diploid" still estimates its own ploidy. The
+argument needs the fitted output, not the requested parameter.
+
+To close this: copy `B3_S12_diploid/` and `B3_S12_noSubclone/` params files from ALICE into
+`results/ichorCNA/params/` under distinguishing names. The same applies to the B2_S08 and
+B2_S15 diagnostic runs, which underpin those two curation decisions.
+
+**The expected-logR screen is mis-calibrated for high-ploidy samples.** The formula in
+`ichorCNA_anomaly_scan.R` is exact only at ploidy 2 and becomes progressively permissive as
+ploidy departs from it. Twenty of 34 samples sit more than 0.1 from ploidy 2, including
+B2_S15 at 2.598. Left unchanged deliberately, since it drives a hand-reviewed triage step
+and correcting it would retrospectively alter the basis of curation already performed — it
+should be revised alongside a re-review, not on its own. See the comment at the function.
+
+**The gene mapping does not record its Ensembl release.** `CNA_gene_mapping.R` queries
+biomaRt without pinning a version, so re-running can yield different coordinates from
+identical input. The build is correct for hg38; only the version is unrecorded.
+
+---
+
 ## Data integrity issues — not code fixes, but blocking
 
 These are not fixed by any commit. They need checking against the source data on ALICE.
