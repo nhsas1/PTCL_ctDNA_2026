@@ -1,12 +1,34 @@
 #!/usr/bin/env Rscript
-# FGA and Aneuploidy Score — ichorCNA Corrected Copy Numbers
-# Both 50% (Taylor et al. 2018) and 25% (sensitive) AS thresholds
+
+# Fraction of Genome Altered (FGA) and Aneuploidy Score (AS) from ichorCNA calls.
+#
+# FGA is a continuous measure of how much of the genome carries a copy-number change,
+# weighted by segment length. AS is the count of whole chromosome arms called as gained or
+# lost, following Taylor et al. 2018. The two capture different things: FGA is dominated by
+# focal and broad events alike, whereas AS deliberately ignores focal events and measures
+# only arm-scale aneuploidy. Reporting both distinguishes a genome with many small changes
+# from one with whole-arm imbalance.
+#
+# Both are computed at two AS thresholds. The 50% threshold is the Taylor definition (an
+# arm is called if more than half of it is altered). The 25% threshold is a more sensitive
+# variant included because at ~1x coverage and low tumour fraction, real arm-level events
+# are frequently segmented into pieces that individually fall short of 50%.
+#
+# Inputs are ichorCNA seg files, preferring the manually curated versions where they
+# exist. Outputs are FGA_AS_summary.csv (one row per sample) and
+# arm_level_scores_detail.csv (one row per sample per arm).
 
 library(dplyr)
 
 cat("=== FGA and Aneuploidy Score Calculation ===\n\n")
 
 # 1. Sample list and file paths
+#
+# This is the n=20 analysable CNA cohort, not the full 34. Samples below the ~3% tumour
+# fraction detection floor are excluded because their copy-number calls are not
+# distinguishable from noise, and FGA computed on noise is meaningless. Tumour fractions
+# are carried here so the output table can be sorted and correlated without re-reading the
+# ichorCNA params files.
 batch12_dir  <- "/scratch/alice/n/nhsas1/PTCL/ichorCNA/output"
 batch3_dir   <- "/scratch/alice/n/nhsas1/PTCL/ichorCNA/output_batch3"
 corrected_dir <- "/scratch/alice/n/nhsas1/PTCL/ichorCNA/corrected_seg_files"
@@ -33,6 +55,10 @@ samples <- data.frame(
   stringsAsFactors = FALSE
 )
 
+# Three samples had ichorCNA solutions that required manual review and correction; those
+# read from corrected_seg_files rather than the raw ichorCNA output. Curation altered only
+# the corrected copy number and call columns (11 and 12), which are exactly the columns
+# read below, so downstream results reflect the curated calls.
 samples$seg_file <- sapply(samples$sample, function(s) {
   if (s == "B2_S08") {
     file.path(corrected_dir, "B2_S08.seg.corrected.txt")
@@ -58,6 +84,18 @@ if (length(missing) > 0) {
 }
 
 # 2. Chromosome arm coordinates (hg38)
+#
+# 39 arms, which is the Taylor et al. denominator: 22 autosomes give 44 arms, minus the
+# five acrocentric p-arms (13p, 14p, 15p, 21p, 22p) which carry only repetitive satellite
+# DNA and are not assayable. Sex chromosomes are absent throughout because ichorCNA was run
+# with --chrs "c(1:22)", so no X or Y segments exist to score.
+#
+# IMPORTANT: these coordinates are aligned to ichorCNA's 1Mb bin grid, not to true hg38 arm
+# boundaries. p-arms start at 1e6 rather than 1, and centromere positions are rounded to
+# the bin edge. arm_length below is therefore the assayed span of the arm, not its
+# reference length. This is internally consistent - the same coordinates define both the
+# numerator (overlapping altered bases) and the denominator - so the fractions are valid,
+# but the values should not be quoted as hg38 arm lengths.
 arms <- data.frame(
   chr = c(
     1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10,
@@ -99,6 +137,11 @@ all_segs <- do.call(rbind, lapply(1:nrow(samples), function(i) {
   s <- samples$sample[i]
   f <- samples$seg_file[i]
   seg <- read.table(f, header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+  # Columns are taken by position from the ichorCNA seg format. Columns 7-8 are the raw
+  # copy number and call; columns 11-12 are the purity- and ploidy-corrected versions.
+  # Everything downstream uses the corrected copy number, because the raw call is relative
+  # and does not account for the fact that a low tumour fraction sample dilutes every
+  # change towards diploid. orig_CN is retained only for the curation check at the end.
   data.frame(
     sample     = s,
     chr        = seg[[2]],
@@ -120,6 +163,12 @@ cat(sprintf("Loaded %d segments across %d samples.\n\n",
 # 4. Calculate FGA
 cat("Calculating FGA...\n")
 
+# FGA is length-weighted: each segment contributes its span in bases, so one 50Mb deletion
+# counts far more than ten 100kb ones. The denominator is the total segmented span for that
+# sample rather than a fixed genome size, which means FGA is the altered fraction of the
+# assayed genome. Altered is defined strictly as corrected copy number not equal to 2, so
+# copy-neutral loss of heterozygosity is not counted - sWGS cannot detect it without allele
+# fractions.
 fga_results <- all_segs %>%
   mutate(
     segment_size = end - start,
@@ -145,6 +194,10 @@ cat("FGA calculated.\n\n")
 # 5. Calculate arm-level aneuploidy score (both 50% and 25% thresholds)
 cat("Calculating Aneuploidy Score...\n")
 
+# Bases shared between a segment and an arm. Segments can straddle the centromere, so a
+# single segment may contribute to both the p and q arm of a chromosome; taking the
+# intersection rather than assigning the whole segment to one arm avoids double-counting.
+# Returns 0 when the intervals do not meet.
 calc_overlap <- function(seg_start, seg_end, arm_start, arm_end) {
   overlap_start <- max(seg_start, arm_start)
   overlap_end   <- min(seg_end, arm_end)
@@ -177,10 +230,13 @@ for (s in unique(all_segs$sample)) {
       }
     }
 
+    # Fractions of the arm gained and lost. These are independent quantities and can both
+    # be substantial on the same arm, when part of it is gained and another part lost.
     frac_gain <- gain_bases / arm_length
     frac_loss <- loss_bases / arm_length
 
-    # 50% threshold status
+    # 50% threshold, the Taylor et al. definition. Only one of the two fractions can exceed
+    # 0.5, so the order of these branches cannot affect the outcome.
     if (frac_gain > 0.5) {
       status_50 <- "GAIN"
     } else if (frac_loss > 0.5) {
@@ -189,7 +245,9 @@ for (s in unique(all_segs$sample)) {
       status_50 <- "NEUTRAL"
     }
 
-    # 25% threshold status
+    # 25% threshold, the sensitive variant. Unlike the 50% case, both fractions can exceed
+    # 0.25 on the same arm, so the direction must be decided by which is larger rather than
+    # by branch order.
     if (frac_gain > 0.25) {
       status_25 <- "GAIN"
     } else if (frac_loss > 0.25) {
@@ -275,6 +333,12 @@ cat("  FGA_AS_summary.csv          - one row per sample\n")
 cat("  arm_level_scores_detail.csv - per-arm breakdown (both thresholds)\n")
 
 # 8. Sanity checks
+#
+# These guard against the failure modes that would otherwise be invisible in a summary
+# table: an FGA outside 0-1 or an AS above 39 would mean the arm coordinates or the
+# overlap logic are wrong; AS_25 below AS_50 would be arithmetically impossible, since any
+# arm passing 50% necessarily passes 25%; and FGA not equalling gain plus loss would mean
+# a segment was counted in neither or both directions.
 cat("\n=== SANITY CHECKS ===\n")
 
 if (any(final$FGA < 0 | final$FGA > 1)) {
@@ -311,6 +375,8 @@ if (any(fga_check > 0.001)) {
   cat("CHECK 4 PASS: FGA = FGA_gain + FGA_loss for all samples\n")
 }
 
+# Confirms the curated samples actually differ from their raw calls, so a silent failure to
+# read the corrected file would show up here as zero mismatches.
 cat("\nCHECK 5: Corrected sample details:\n")
 for (s in c("B2_S08", "B2_S15", "B3_S09")) {
   s_segs <- all_segs[all_segs$sample == s, ]
