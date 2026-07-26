@@ -23,6 +23,19 @@ while [ ${current} -le ${END} ]; do
     while squeue -j ${JOBID} -h 2>/dev/null | grep -q .; do
         sleep 15
     done
+
+    # Leaving the queue is not the same as succeeding. A chunk that FAILED, was CANCELLED
+    # or hit TIMEOUT disappears from squeue exactly as a completed one does, so without
+    # this check the driver printed "complete" and submitted the next chunk regardless -
+    # and finished by announcing that everything completed. A failed extraction chunk was
+    # indistinguishable from a successful one in this script's own output.
+    BAD=$(sacct -j "${JOBID}" --format=State -n -X 2>/dev/null \
+          | tr -d ' ' | grep -v '^COMPLETED$' | sort -u | tr '\n' ' ')
+    if [ -n "${BAD}" ]; then
+        echo "ERROR: range ${current}-${stop} did not complete cleanly. States: ${BAD}"
+        echo "Stopping so the failure is not carried forward silently."
+        exit 1
+    fi
     echo "Range ${current}-${stop} complete"
 
     current=$((stop + 1))
