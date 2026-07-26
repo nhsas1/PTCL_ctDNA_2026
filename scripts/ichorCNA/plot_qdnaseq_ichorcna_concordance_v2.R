@@ -127,6 +127,16 @@ prop_bias_fit <- lm(diff_log2 ~ mean_log2, data = pooled)
 prop_slope <- coef(prop_bias_fit)[2]
 prop_p <- summary(prop_bias_fit)$coefficients[2, 4]
 
+# With ~80,000 pooled bins the t statistic is large enough that the p-value underflows to
+# exactly 0 in double precision, and the table previously reported a literal 0. No test
+# returns zero probability, so it is floored at machine epsilon and should be quoted as
+# "p < 2.2e-16" rather than as an equality.
+#
+# The slope is the number that carries the meaning here. At this sample size almost any
+# non-zero slope is significant, so a detectable proportional bias of this magnitude is
+# still negligible in practice.
+prop_p <- max(prop_p, .Machine$double.eps)
+
 pct_within <- mean(pooled$diff_log2 >= lower_loa & pooled$diff_log2 <= upper_loa) * 100
 
 pooled_r <- cor(pooled$ichor_log2, pooled$qdnaseq_log2, method = "pearson")
@@ -193,7 +203,8 @@ ggsave(file.path(output_dir, "qdnaseq_ichorcna_concordance.png"), combined_plot,
 cat("\n=== Bland-Altman summary ===\n")
 cat("Bias:", round(bias,4), "log2 units\n")
 cat("Limits of agreement:", round(lower_loa,4), "to", round(upper_loa,4), "\n")
-cat("Proportional bias slope:", round(prop_slope,5), "| p =", signif(prop_p,3), "\n")
+cat("Proportional bias slope:", round(prop_slope,5),
+    "| p", if (prop_p <= .Machine$double.eps) "< 2.2e-16" else paste("=", signif(prop_p,3)), "\n")
 cat("Percent within LoA:", round(pct_within,2), "\n")
 cat("Pooled r:", round(pooled_r,4), "| Median per-sample r:", round(median_r,4), "\n")
 cat("Outputs saved to:", output_dir, "\n")
