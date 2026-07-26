@@ -174,6 +174,9 @@ QC_results/       BAM QC, coverage, duplicate rates, sample metadata
 - [`RERUN_REQUIRED.md`](RERUN_REQUIRED.md) — outputs that predate a bug fix and need
   regenerating, separated from those verified unaffected, plus open data-integrity
   questions.
+- [`CHANGES_VS_ORIGINAL.md`](CHANGES_VS_ORIGINAL.md) — every difference between this repo
+  and the original thesis repo: the 21 fixes and what each changed, results status, and
+  what was deliberately left alone.
 - [`CLEANUP_PROPOSAL.md`](CLEANUP_PROPOSAL.md) — proposed structural changes, with the
   applied items marked.
 - [`CLAUDE.md`](CLAUDE.md) — project conventions and key technical facts.
