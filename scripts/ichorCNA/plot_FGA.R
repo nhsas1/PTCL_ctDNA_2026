@@ -1,3 +1,16 @@
+# Tumour fraction against FGA for the full 34-sample cohort - SUPERSEDED by
+# plot_FGA_corrected.R, which uses the curated n=20 analysable cohort.
+#
+# This version reads the earlier pre-curation FGA table and deliberately keeps the
+# below-floor samples in the plot, greying out the region under 3% tumour fraction. Its
+# purpose is to justify the detection floor visually: samples below it show FGA values that
+# reflect noise rather than biology, which is the argument for excluding them. The linear
+# fit is deliberately restricted to detectable samples so the below-floor points cannot
+# influence the slope they are being used to argue against.
+#
+# Retained for that argument. It writes into FGA_results/, a different directory from the
+# corrected version, so the two do not overwrite each other despite sharing a filename.
+
 library(dplyr)
 library(ggplot2)
 library(ggrepel)
@@ -8,9 +21,15 @@ RESULTS_DIR <- "/scratch/alice/n/nhsas1/PTCL/ichorCNA/FGA_results/"
 results <- read_csv(paste0(RESULTS_DIR, "FGA_results_all34.csv"),
                     show_col_types = FALSE)
 
+# This first assignment is immediately overwritten by the recomputation below and has no
+# effect. It is left in place only because the recomputation depends on nothing from it;
+# the grouping that actually reaches the plot is derived from tumor_fraction directly.
 results$tf_group <- factor(results$tf_group,
   levels = c("High (>=10%)", "Low-detectable (3-10%)", "Below floor (<3%)"))
 
+# Recompute the groups from the numeric tumour fraction rather than trusting the strings in
+# the CSV, which can be mangled by the >= characters on a round trip through read/write.
+# The 3% and 10% cut points are the detection floor and the high-burden threshold.
 # Fix factor levels from CSV (may have been saved with special chars)
 results <- results %>%
   mutate(tf_group = case_when(

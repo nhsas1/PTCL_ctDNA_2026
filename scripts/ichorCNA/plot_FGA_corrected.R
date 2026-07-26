@@ -1,3 +1,19 @@
+# Two figures from the curated n=20 cohort: tumour fraction against FGA, and FGA against
+# the Taylor Aneuploidy Score. This is the version that produced the committed figures;
+# plot_FGA.R is the earlier pre-curation n=34 equivalent.
+#
+# The TF-versus-FGA plot addresses an obvious objection. If FGA simply tracked tumour
+# fraction, it would be measuring assay sensitivity rather than tumour biology, and a
+# strong relationship here would undermine using FGA as a biological descriptor. Showing
+# the relationship explicitly is what allows that to be argued rather than assumed.
+#
+# CAVEAT on the second figure, which needs stating if it is used to support a claim: FGA
+# and AS_50 are not independent measures. Both are computed from the same segment calls in
+# calculate_FGA_AS.R - FGA is the length-weighted altered fraction, AS is a count of arms
+# passing a coverage threshold on those same segments. A genome with high FGA necessarily
+# has more altered arms. Their correlation is therefore close to tautological and is best
+# presented as an internal consistency check, not as an independent finding.
+
 library(dplyr)
 library(ggplot2)
 library(ggrepel)
@@ -16,6 +32,8 @@ results <- results %>%
       grepl("^B2_", sample) ~ "Batch2",
       grepl("^B3_", sample) ~ "Batch3"
     ),
+    # Only two groups here, unlike the n=34 version: every sample in the curated cohort is
+    # above the 3% floor by construction, so the below-floor category cannot occur.
     tf_group = case_when(
       tumor_fraction >= 0.10 ~ "High (>=10%)",
       TRUE                   ~ "Low-detectable (3-10%)"
@@ -52,6 +70,9 @@ p1 <- ggplot(results, aes(x = tumor_fraction * 100, y = FGA)) +
     plot.caption    = element_text(size = 8,  colour = "grey50"))
 
 # Plot 2: FGA vs AS_50 scatter (Figure 4)
+# See the caveat in the header. This rho is high by construction because both axes derive
+# from the same segment calls, so it confirms the two measures are computed consistently
+# rather than demonstrating a relationship between distinct quantities.
 cor_fga_as <- cor.test(results$FGA, results$AS_50, method = "spearman")
 
 p2 <- ggplot(results, aes(x = FGA, y = AS_50)) +
