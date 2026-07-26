@@ -21,8 +21,24 @@ batch_labels <- setNames(
 
 wrap_text <- function(txt, width) paste(strwrap(txt, width = width), collapse = "\n")
 
+# Agreement between two measurements of the same sample is not the same thing as
+# correlation between them. Pearson r measures association with a straight line of any
+# intercept, so two variables can differ by a large constant offset and still return
+# r close to 1 - which is exactly the failure these sensitivity figures exist to exclude.
+#
+# Report mean bias with 95% limits of agreement (Bland-Altman) instead, which is the same
+# approach already used in the QDNAseq-vs-ichorCNA concordance analysis. The delta columns
+# were already computed in calculate_fragment_metrics.R and previously went unused.
+agreement <- function(delta) {
+    b <- mean(delta, na.rm = TRUE)
+    s <- sd(delta, na.rm = TRUE)
+    list(bias = b, lower = b - 1.96 * s, upper = b + 1.96 * s,
+         n_pos = sum(delta > 0, na.rm = TRUE), n = sum(!is.na(delta)))
+}
+
 # Figure 1: Batch3 median fragment length, dedup sensitivity check
 r1 <- cor(comparison$median_original, comparison$median_dedup, method = "pearson")
+ag1 <- agreement(comparison$delta_median)
 axis_range1 <- range(c(comparison$median_original, comparison$median_dedup))
 
 fig1 <- ggplot(comparison, aes(x = median_original, y = median_dedup)) +
@@ -30,7 +46,9 @@ fig1 <- ggplot(comparison, aes(x = median_original, y = median_dedup)) +
     geom_point(color = "#0063A3", size = 3, alpha = 0.85) +
     coord_equal(xlim = axis_range1, ylim = axis_range1) +
     annotate("text", x = axis_range1[1], y = axis_range1[2],
-             label = paste0("Pearson r = ", sprintf("%.3f", r1), "\nn = ", nrow(comparison)),
+             label = paste0("mean bias = ", sprintf("%+.3f", ag1$bias),
+                            "\n95% LoA ", sprintf("%.3f", ag1$lower), " to ", sprintf("%.3f", ag1$upper),
+                            "\nn = ", nrow(comparison)),
              hjust = 0, vjust = 1, size = 3.8, color = "grey20") +
     labs(
         title = wrap_text("Duplicate marking does not distort median fragment length", 45),
@@ -48,6 +66,12 @@ ggsave(file.path(out_dir, "fig_batch3_median_dedup_sensitivity.png"), fig1, widt
 
 # Figure 2: Batch3 short:long ratio, dedup sensitivity check
 r2 <- cor(comparison$sl_ratio_original, comparison$sl_ratio_dedup, method = "pearson")
+# This is the figure where the distinction matters. delta_sl_ratio is positive in all 13
+# Batch 3 samples (sign test p = 0.0002), a perfectly systematic upward shift after
+# duplicate marking, yet Pearson r is 0.9998 and reports nothing about it. The bias and
+# limits of agreement below are what actually support the figure's claim of a small but
+# consistent effect.
+ag2 <- agreement(comparison$delta_sl_ratio)
 axis_range2 <- range(c(comparison$sl_ratio_original, comparison$sl_ratio_dedup))
 
 fig2 <- ggplot(comparison, aes(x = sl_ratio_original, y = sl_ratio_dedup)) +
@@ -55,7 +79,10 @@ fig2 <- ggplot(comparison, aes(x = sl_ratio_original, y = sl_ratio_dedup)) +
     geom_point(color = "#327A95", size = 3, alpha = 0.85) +
     coord_equal(xlim = axis_range2, ylim = axis_range2) +
     annotate("text", x = axis_range2[1], y = axis_range2[2],
-             label = paste0("Pearson r = ", sprintf("%.3f", r2), "\nn = ", nrow(comparison)),
+             label = paste0("mean bias = ", sprintf("%+.4f", ag2$bias),
+                            "\n95% LoA ", sprintf("%.4f", ag2$lower), " to ", sprintf("%.4f", ag2$upper),
+                            "\nhigher after dedup in ", ag2$n_pos, "/", ag2$n, " samples",
+                            "\nn = ", nrow(comparison)),
              hjust = 0, vjust = 1, size = 3.8, color = "grey20") +
     labs(
         title = wrap_text("Duplicate marking has a small, consistent effect on short:long ratio", 45),
@@ -98,5 +125,10 @@ ggsave(file.path(out_dir, "fig_median_fragment_length_by_batch_annotated.pdf"), 
 ggsave(file.path(out_dir, "fig_median_fragment_length_by_batch_annotated.png"), fig3, width = 8, height = 6.5, dpi = 300)
 
 cat("Publication figures written to:", out_dir, "\n")
-cat("Batch3 median dedup sensitivity: r =", sprintf("%.4f", r1), "\n")
-cat("Batch3 S:L ratio dedup sensitivity: r =", sprintf("%.4f", r2), "\n")
+cat("Batch3 median dedup sensitivity: bias =", sprintf("%+.4f", ag1$bias),
+    "| LoA", sprintf("%.4f", ag1$lower), "to", sprintf("%.4f", ag1$upper),
+    "| Pearson r =", sprintf("%.4f", r1), "\n")
+cat("Batch3 S:L ratio dedup sensitivity: bias =", sprintf("%+.4f", ag2$bias),
+    "| LoA", sprintf("%.4f", ag2$lower), "to", sprintf("%.4f", ag2$upper),
+    "| higher after dedup in", ag2$n_pos, "of", ag2$n, "samples",
+    "| Pearson r =", sprintf("%.4f", r2), "\n")
