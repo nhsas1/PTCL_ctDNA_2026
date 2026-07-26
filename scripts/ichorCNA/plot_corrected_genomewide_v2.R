@@ -76,7 +76,13 @@ plot_sample <- function(sample_id) {
     mutate(chrom = as.character(chrom))
 
   bins <- assign_bin_calls(bins, seg)
+  n_before <- nrow(bins)
   bins <- bins %>% filter(!is.na(corrected_call))
+  n_dropped <- n_before - nrow(bins)
+  if (n_dropped > 0) {
+    cat(sprintf("  %s: %d bin(s) not fully contained in any segment, omitted from plot\n",
+                sample_id, n_dropped))
+  }
 
   bins <- bins %>%
     mutate(
