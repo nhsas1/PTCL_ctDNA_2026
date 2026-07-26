@@ -22,7 +22,16 @@ since it does not depend on calling a copy number state.
 ## Cohort
 
 34 plasma cfDNA samples across three sequencing batches. Paired-end 150bp, aligned with
-BWA-MEM to hg38. Coverage 0.87–1.77x.
+BWA-MEM to hg38. Coverage **0.93–1.77x** (see the caveat below; other documents in this
+project quote 0.87 as the lower bound, which does not match `QC_results/bam_qc_summary.tsv`
+— the lowest sample is B2_S03 at 0.93).
+
+Coverage is *raw* depth: `bam_qc_final.sh` computes it as total reads × read length ÷
+3.2e9, using total rather than mapped reads and including duplicates. Batches 1–2 carry
+9–15% marked duplicates, so their effective post-deduplication depth is correspondingly
+lower than the quoted figure. The 3.2e9 denominator is also larger than hg38's ~3.1e9
+assembled length and larger still than the ~2.9e9 mappable genome, so these values are
+conservative.
 
 | Batch | n | Deduplicated at source |
 |---|---|---|
