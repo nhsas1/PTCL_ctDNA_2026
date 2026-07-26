@@ -1,4 +1,4 @@
 "sample","ichorcna_tf","ichorcna_ploidy","unc_ploidy","unc_cellularity","unc_MAD","unc_expected_tf","unc_tf_diff","con_ploidy","con_cellularity","con_MAD","con_expected_tf","con_tf_diff","improvement","con_n_solutions","cell_range_used","status","interpretation"
 "B3_S06",0.6033,2.002,1.5,0.94,0.0704,0.922,0.318,1.95,0.583,0.081,0.577,0.026,0.292,1,"[0.45,0.75]","SUCCESS","GOOD — constrained agrees with ichorCNA"
 "B3_S08",0.6228,2.005,1.5,0.94,0.0623,0.922,0.299,2.05,0.613,0.0799,0.619,0.004,0.295,1,"[0.47,0.77]","SUCCESS","GOOD — constrained agrees with ichorCNA"
-"B3_S09",0.3612,2.002,2.05,0.74,0.0741,0.745,0.384,3.1,0.451,0.1165,0.56,0.199,0.184,1,"[0.21,0.51]","SUCCESS","IMPROVED — constrained better than unconstrained"
+"B3_S09",0.3612,2.002,2.05,0.74,0.0741,0.745,0.384,3.1,0.451,0.1165,0.56,0.199,0.184,1,"[0.21,0.51]","SUCCESS","IMPROVED but still discordant — closer than unconstrained, still >0.10 from ichorCNA"
