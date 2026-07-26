@@ -1,7 +1,13 @@
 #!/bin/bash
-# Runs the original QDNAseq-vs-ichorCNA concordance script. SUPERSEDED - prefer
-# run_concordance_v2.slurm, since the v1 R script overwrites the committed v2 figures with
-# an older version that has no Bland-Altman analysis.
+# ARCHIVED - do not run. Kept for provenance only.
+#
+# This submits the original QDNAseq-vs-ichorCNA concordance script, which writes the same
+# output filenames as version 2 and would replace the committed figures with an older
+# two-panel version lacking the Bland-Altman agreement analysis.
+#
+# Use scripts/ichorCNA/run_concordance_v2.slurm instead. The SCRIPT path below still points
+# at the original deployed location and is deliberately not updated, since running this is
+# not intended.
 #SBATCH --job-name=qdna_ichor_concordance
 #SBATCH --partition=short
 #SBATCH --time=00:30:00
