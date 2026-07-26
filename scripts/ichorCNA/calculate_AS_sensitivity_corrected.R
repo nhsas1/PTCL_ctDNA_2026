@@ -1,3 +1,13 @@
+# Sensitivity analysis for the arm-coverage threshold used in the Aneuploidy Score.
+#
+# The Taylor et al. definition calls an arm altered when more than 50% of it is affected.
+# At ~1x coverage and low tumour fraction, real arm-level events are often broken into
+# segments that individually fall short of that, so a 25% threshold was also computed. This
+# script asks whether the choice of threshold changes the conclusions, which is the
+# question a marker will ask if only one threshold is reported.
+#
+# Reads FGA_AS_summary.csv, which already contains both scores; nothing is recomputed here.
+
 library(dplyr)
 library(readr)
 library(ggplot2)
@@ -9,6 +19,11 @@ results_dir <- "/scratch/alice/n/nhsas1/PTCL/ichorCNA/aneuploidy_scores/"
 results <- read_csv(file.path(results_dir, "FGA_AS_summary.csv"),
                     show_col_types = FALSE)
 
+# AS_25 can never be lower than AS_50: any arm passing the 50% threshold necessarily passes
+# 25%, so the two scores are nested rather than independent. The "Lower at 25%" branch is
+# therefore unreachable by construction and exists only as a guard - if it ever fires, the
+# scoring logic upstream is broken. The +/-2 arm window for calling a sample concordant is a
+# pragmatic choice, not a statistical one.
 comparison <- results %>%
   mutate(
     AS_difference = AS_25 - AS_50,
@@ -31,6 +46,10 @@ cat(sprintf("Samples higher at 25%% threshold:    %d / %d\n",
     sum(comparison$direction == "Higher at 25%"), nrow(comparison)))
 cat(sprintf("Samples lower at 25%% threshold:     %d / %d\n",
     sum(comparison$direction == "Lower at 25%"), nrow(comparison)))
+# Spearman is used because both scores are bounded counts rather than continuous measures.
+# Note this rho is not evidence that the thresholds agree: the scores are nested, so a high
+# correlation is guaranteed by construction. The informative numbers are the per-sample
+# differences and the concordance counts above, not this coefficient.
 cat(sprintf("\nSpearman AS_50 vs AS_25: rho = %.3f\n",
     cor(comparison$AS_50, comparison$AS_25, method = "spearman")))
 cat(sprintf("Mean difference (25%% - 50%%):       %.1f arms\n",
@@ -41,7 +60,10 @@ cat(sprintf("Range of difference:                %d to %d arms\n",
 write_csv(comparison,
           file.path(results_dir, "AS_threshold_sensitivity_comparison.csv"))
 
-# Plot: AS_50 vs AS_25
+# Plot: AS_50 vs AS_25. Point size carries tumour fraction, so it is visible whether the
+# samples that gain arms at the lower threshold are the low-TF ones, which is the expected
+# pattern if the 50% threshold is losing genuine events to fragmented segmentation.
+# coord_equal keeps the diagonal at 45 degrees so departures from concordance read honestly.
 p_compare <- ggplot(comparison, aes(x = AS_50, y = AS_25)) +
   geom_abline(slope = 1, intercept = 0,
               linetype = "dashed", colour = "grey60", linewidth = 0.7) +

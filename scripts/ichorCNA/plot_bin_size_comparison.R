@@ -1,3 +1,16 @@
+# Validation that the 1Mb bin size used throughout the CNA arm does not drive the tumour
+# fraction estimates. ichorCNA was re-run at 500kb on all 34 samples and the two sets of
+# estimates are compared here.
+#
+# This matters because bin size is a free parameter: smaller bins give finer resolution but
+# fewer reads per bin, so at ~1x coverage they are noisier. If tumour fraction moved
+# substantially with bin size, the 3% detection floor used to define the analysable cohort
+# would be arbitrary. Two views are produced - a scatter against the identity line, and a
+# Bland-Altman plot, which is the correct way to assess agreement rather than association.
+#
+# NOTE: these paths use a different project root (ptcl_ctdna_thesis) from every other script
+# in this pipeline, which use PTCL. Worth reconciling.
+
 library(ggplot2)
 library(patchwork)
 
@@ -6,6 +19,8 @@ output_dir <- "/scratch/alice/n/nhsas1/ptcl_ctdna_thesis/results/ichorCNA/bin_si
 
 df <- read.csv(data_path, stringsAsFactors = FALSE)
 
+# Unflagged samples come through as empty strings; label them explicitly so they appear in
+# the legend rather than as a blank category.
 df$flag[df$flag == ""] <- "Consistent"
 df$flag <- factor(df$flag, levels = c("Consistent", "THRESHOLD_FLIP", "MAJOR_OUTLIER"))
 
@@ -15,11 +30,18 @@ flag_colors <- c(
   "MAJOR_OUTLIER" = "#DC2626"
 )
 
+# Pearson is reported alongside the Bland-Altman panel rather than instead of it. On its
+# own r would be misleading here: two estimates can correlate almost perfectly and still
+# differ by a constant offset, which is exactly the failure this validation must exclude.
+# The bias and limits of agreement below are what answer that.
 r_value <- cor(df$TF_1Mb, df$TF_500kb, method = "pearson")
 n_samples <- nrow(df)
 
 scatter_plot <- ggplot(df, aes(x = TF_1Mb, y = TF_500kb, color = flag)) +
   geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "grey40") +
+  # The dotted lines mark the 3% detection floor on both axes. A sample falling in an
+  # off-diagonal quadrant crossed the floor when bin size changed, which is the
+  # THRESHOLD_FLIP category and the practical risk this validation is testing for.
   geom_hline(yintercept = 0.03, linetype = "dotted", color = "grey60") +
   geom_vline(xintercept = 0.03, linetype = "dotted", color = "grey60") +
   geom_point(size = 2.5, alpha = 0.85) +
@@ -36,6 +58,10 @@ scatter_plot <- ggplot(df, aes(x = TF_1Mb, y = TF_500kb, color = flag)) +
   theme_bw(base_size = 12) +
   theme(legend.position = "bottom")
 
+# Bland-Altman: plot the difference between the two estimates against their mean. Neither
+# bin size is a gold standard, so the mean stands in for the unknown true value. A bias near
+# zero means the two agree on average; the limits of agreement bound how far an individual
+# sample can differ, which is the number that matters for a per-sample cohort decision.
 df$mean_tf <- (df$TF_1Mb + df$TF_500kb) / 2
 df$diff_tf <- df$TF_500kb - df$TF_1Mb
 

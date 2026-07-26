@@ -23,8 +23,8 @@ which was larger. Direction is now taken from the larger fraction.
 |---|---|
 | `results/ichorCNA/FGA_AS_corrected/arm_level_scores_detail.csv` | **stale** — 7 of 780 rows change |
 | `results/ichorCNA/FGA_AS_corrected/FGA_AS_summary.csv` | **stale** — `arms_gained_25` / `arms_lost_25` only |
-| `results/ichorCNA/FGA_AS_corrected/AS_threshold_sensitivity_comparison.csv` | verified unaffected |
-| `results/ichorCNA/FGA_AS_corrected/AS_sensitivity_comparison.png` | verified unaffected |
+| `results/ichorCNA/FGA_AS_corrected/AS_threshold_sensitivity_comparison.csv` | **stale** — carries `arms_gained_25` / `arms_lost_25`; its `AS_25`, `AS_difference` and `direction` columns are unaffected |
+| `results/ichorCNA/FGA_AS_corrected/AS_sensitivity_comparison.png` | verified unaffected — plots `AS_50` vs `AS_25` and `direction` only |
 | FGA columns, `AS_50`, `AS_25` totals, all correlations | verified unaffected |
 
 The seven affected rows, all changing GAIN to LOSS:
