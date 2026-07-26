@@ -201,6 +201,15 @@ cat(sprintf("Unique genes across all sources: %d\n", length(all_gene_symbols)))
 
 cat("Fetching hg38 coordinates from Ensembl via biomaRt...\n")
 
+# The default Ensembl mart is GRCh38, which is the correct build to match hg38 segment
+# coordinates. GRCh37 would require host = "grch37.ensembl.org", so the build is right.
+#
+# REPRODUCIBILITY GAP: no Ensembl release is pinned, so this queries whatever version is
+# live at run time. Gene coordinates and HGNC symbol assignments change between releases,
+# which means re-running this script months apart can produce different gene lists from
+# identical segment input. For a thesis result that should be reproducible, either pin the
+# release (useEnsembl(..., version = NNN)) or record the release used alongside the output.
+# The committed gene mapping does not state which release produced it.
 ensembl <- useMart("ensembl", dataset = "hsapiens_gene_ensembl")
 
 coords <- getBM(
@@ -219,6 +228,14 @@ coords <- coords %>%
   # Remove duplicates (keep longest transcript region per gene per chromosome)
   group_by(gene, gene_chr) %>%
   summarise(gene_start = min(gene_start), gene_end = max(gene_end), .groups = "drop") %>%
+  # X is remapped to 23 so the column can be integer for joining against segment chr.
+  #
+  # Note Y is admitted by the filter above but has no such remapping, so as.integer("Y")
+  # yields NA with a coercion warning and any Y gene is silently unmatchable. This has no
+  # effect on results: ichorCNA ran with --chrs "c(1:22)", so no X or Y segments exist and
+  # neither X nor Y genes could ever match regardless. Including them in standard_chr is
+  # therefore redundant rather than harmful, but the Y path is the reason for any
+  # "NAs introduced by coercion" warning in the log.
   mutate(gene_chr = as.integer(ifelse(gene_chr == "X", "23", gene_chr)))
 
 cat(sprintf("Coordinates retrieved for %d genes on standard chromosomes\n",

@@ -64,7 +64,29 @@ CN_DISCORD_THRESHOLD <- 1.0
 # This formula gives the logR you would EXPECT to see in the seg.txt if the
 # copy number call were correct. Comparing this to the actual seg.median.logR
 # tells you whether the call is physically consistent with the data.
-
+#
+# UNRESOLVED - review before relying on this for any new curation.
+#
+# This expression is exact only when ploidy is 2. The ichorCNA mixture normalises the
+# tumour signal against a mixed tumour-normal background, which gives
+#
+#   ratio = ((1 - TF) * 2 + TF * cn) / ((1 - TF) * 2 + TF * ploidy)
+#
+# The two agree exactly at ploidy 2 and diverge as ploidy departs from it. At TF 0.5 and
+# cn 1 the difference is 0.00 log2 units at ploidy 2.0, 0.03 at 2.2, 0.07 at 2.5 and 0.15
+# at 3.0, with this formula always giving the less extreme value - so the screen is
+# systematically less likely to flag a segment in a high-ploidy sample.
+#
+# This matters here because 20 of the 34 samples have ploidy more than 0.1 away from 2, and
+# among them is B2_S15 at ploidy 2.598 - the sample whose curation has the largest downstream
+# effect, since it becomes the most-altered genome in the cohort. The threshold used to
+# screen its segments was therefore mis-calibrated in the permissive direction.
+#
+# Not changed here, deliberately. This function drives a triage heuristic whose output was
+# reviewed by hand, not a reported quantity, and altering it would change which segments
+# were flagged and so retrospectively alter the basis of curation decisions already made.
+# The correction should be made together with a re-review of the flagged segments, not on
+# its own.
 expected_logR <- function(TF, cn, ploidy) {
   log2((TF * cn / ploidy) + (1 - TF))
 }
