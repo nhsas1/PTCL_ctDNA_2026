@@ -1,9 +1,20 @@
+# Diagnostic QDNAseq plots for Batch 3, four per sample. Batch 3 counterpart of
+# generate_plots.R; see that script for what each of the four plots is for.
+#
+# Only OUTPUT_DIR and METADATA differ from the Batch 1-2 version. BINS_FILE is identical,
+# so the same 15kb hg38 bin set is used. Note this file was also reflowed when it was
+# copied (blank lines stripped), which makes a direct diff against generate_plots.R
+# noisier than the two-line difference it actually represents.
+#
+# Batch 3 BAMs are not deduplicated, so the raw-count plot includes PCR and optical
+# duplicates and its per-bin counts run higher than the equivalent Batch 1-2 plot. Bear
+# that in mind when comparing raw-count figures across batches.
+
 .libPaths(c('/home/n/nhsas1/R/library', .libPaths()))
 library(QDNAseq)
 library(Biobase)
 pdf(NULL)
 
-# ── Only these 3 lines differ from original generate_plots.R ─
 BINS_FILE  <- '/scratch/alice/n/nhsas1/PTCL/scripts/hg38_bins_15kb_annotated.rds'
 OUTPUT_DIR <- '/scratch/alice/n/nhsas1/PTCL/QDNAseq_output_batch3'
 METADATA   <- '/scratch/alice/n/nhsas1/PTCL/scripts/sample_metadata_batch3.csv'

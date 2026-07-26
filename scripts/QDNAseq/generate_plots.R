@@ -1,3 +1,13 @@
+# Diagnostic QDNAseq plots for Batches 1 and 2, four per sample, showing the profile at
+# each stage of processing. These are QC figures used to eyeball whether GC correction
+# and segmentation behaved sensibly; they are not the thesis CNA figures, which come from
+# ichorCNA and GenVisR.
+#
+# This script re-runs the whole QDNAseq pipeline from the BAM rather than reloading the
+# objects saved by QDNAseq_ALICE_automated.R. That makes it a second independent pass over
+# every BAM, so the plots are only guaranteed to match the committed .seg files as long as
+# both scripts keep identical parameters. Any parameter change must be made in both.
+
 .libPaths(c('/home/n/nhsas1/R/library', .libPaths()))
 library(QDNAseq)
 library(Biobase)
@@ -25,7 +35,9 @@ for (i in seq_len(nrow(metadata))) {
 
     readCounts <- binReadCounts(bins, bamfiles=bam_path, bamnames=sample_id)
 
-    # Plot 1 — Raw counts
+    # Plot 1 — Raw counts, before any correction. Used to spot gross coverage problems:
+    # a sample with heavy duplication or a failed library shows up here as an unusually
+    # wide or skewed spread of per-bin counts.
     pdf(file.path(sample_dir, paste0(sample_id, '_01_rawCounts.pdf')), width=14, height=5)
     plot(readCounts, logTransform=FALSE, ylim=c(-50, 200),
          main=paste(sample_id, '- Raw Read Counts'))
@@ -38,7 +50,8 @@ for (i in seq_len(nrow(metadata))) {
     copyNumbersNormalized <- normalizeBins(copyNumbers)
     copyNumbersSmooth     <- smoothOutlierBins(copyNumbersNormalized)
 
-    # Plot 2 — Smoothed
+    # Plot 2 — After GC correction, normalisation and outlier smoothing. Comparing this
+    # against plot 1 shows whether the GC wave was removed.
     pdf(file.path(sample_dir, paste0(sample_id, '_02_smoothed.pdf')), width=14, height=5)
     plot(copyNumbersSmooth, main=paste(sample_id, '- Smoothed Copy Number'))
     dev.off()
@@ -46,7 +59,8 @@ for (i in seq_len(nrow(metadata))) {
     copyNumbersSegmented <- segmentBins(copyNumbersSmooth, transformFun='sqrt')
     copyNumbersSegmented <- normalizeSegmentedBins(copyNumbersSegmented)
 
-    # Plot 3 — Segmented
+    # Plot 3 — After CBS segmentation. Checked for over-segmentation, which at ~1x
+    # coverage indicates the variance-stabilising transform is not holding.
     pdf(file.path(sample_dir, paste0(sample_id, '_03_segmented.pdf')), width=14, height=5)
     plot(copyNumbersSegmented, main=paste(sample_id, '- Segmented'))
     dev.off()
@@ -54,7 +68,9 @@ for (i in seq_len(nrow(metadata))) {
     copyNumbersCalled <- callBins(copyNumbersSegmented, method='cutoff')
     sampleNames(copyNumbersCalled) <- sample_id
 
-    # Plot 4 — Called CNVs — most important for thesis
+    # Plot 4 — Discrete gain/loss calls. The most useful of the four for review, but note
+    # these calls are relative and purity-naive: a low tumour fraction sample shows few
+    # calls because the signal is diluted, not because the genome is quiet.
     pdf(file.path(sample_dir, paste0(sample_id, '_04_called.pdf')), width=14, height=5)
     plot(copyNumbersCalled, main=paste(sample_id, '- Called CNVs'))
     dev.off()
