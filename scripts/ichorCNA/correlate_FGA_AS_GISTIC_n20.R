@@ -1,3 +1,22 @@
+# Do the sample-level burden measures (FGA, Aneuploidy Score) agree with the cohort-level
+# recurrence analysis (GISTIC2)? These measure different things - FGA and AS describe how
+# altered one genome is, GISTIC identifies regions recurrently altered across the cohort -
+# so a positive association is a coherence check, not a tautology.
+#
+# READ THIS BEFORE QUOTING ANY p-VALUE FROM THIS SCRIPT.
+#
+# GISTIC_total is an extremely coarse outcome: across the 20 samples it takes only three
+# distinct values (0, 1, 2), with 5 samples at zero. Seventeen of the twenty observations
+# are tied. Two consequences follow, and both need stating in the write-up:
+#
+#   1. Spearman p-values here are normal approximations, not exact, because cor.test cannot
+#      compute an exact p-value with ties this heavy.
+#   2. The analysis has very little power to detect anything. A three-level outcome over 20
+#      samples cannot support a confident claim in either direction, so a non-significant
+#      result here is weak evidence of absence, not evidence of no relationship.
+#
+# Three correlations are run against the same outcome. See the correction block below.
+
 library(dplyr)
 library(readr)
 library(tidyr)
@@ -19,6 +38,11 @@ cat(sprintf("GISTIC samples with >=1 peak: %d\n", nrow(gcounts)))
 
 # GISTIC output has no Amplification column in this run (zero amp peaks found)
 # so GISTIC_amp is fixed at 0 for every sample rather than read from file
+#
+# The left_join is deliberate and load-bearing: GISTIC_per_sample_counts.csv contains only
+# samples with at least one significant peak, so the five samples with none are absent from
+# it entirely. An inner join would silently drop them and inflate every correlation by
+# removing the low-burden end of the range. The zero-fill below restores them.
 combined <- fga_as %>%
   select(sample, tumor_fraction, correction_applied, FGA, FGA_gain, FGA_loss,
          AS_50, arms_gained_50, arms_lost_50, AS_25, arms_gained_25, arms_lost_25) %>%
@@ -37,6 +61,8 @@ print(as.data.frame(combined %>%
 
 cat("\n=== Spearman correlations ===\n")
 
+# Spearman rather than Pearson because GISTIC_total is a bounded count and FGA is a
+# proportion; neither is normally distributed and the relationship need not be linear.
 cor_fga_gtotal  <- cor.test(combined$FGA,   combined$GISTIC_total, method = "spearman")
 cor_as50_gtotal <- cor.test(combined$AS_50, combined$GISTIC_total, method = "spearman")
 cor_as25_gtotal <- cor.test(combined$AS_25, combined$GISTIC_total, method = "spearman")
@@ -50,6 +76,28 @@ cat(sprintf("AS25 vs GISTIC total (=deletions): rho = %+.3f  p = %.4f\n",
 
 cat("\nNote: no amplification-specific correlations computed, since this\n")
 cat("GISTIC run found zero significant amplification peaks in the n=20 cohort.\n")
+
+# UNRESOLVED - decide before writing up.
+#
+# Three tests are run against the same outcome variable with no multiple-testing
+# correction, while Step 3 of the fragmentomics arm does correct. That inconsistency is the
+# first thing a marker will notice.
+#
+# Applying Benjamini-Hochberg across these three changes the conclusion. On the committed
+# data the FGA correlation is the only one significant at raw p (rho = 0.450, p = 0.0467),
+# and it does not survive correction (p_adj = 0.126); the other two are non-significant
+# either way. So the choice of whether to correct decides whether this analysis reports a
+# positive finding at all.
+#
+# Both are shown below rather than one silently replacing the other, because the honest
+# reading is that the analysis is underpowered: with only three distinct outcome values
+# across 20 samples, neither the raw nor the adjusted result is strong evidence. The
+# correlations are best described as directionally consistent but not significant after
+# correction.
+#
+# The arguments each way: the three predictors are near-redundant views of the same
+# underlying burden, so correcting across them is conservative; but they are three separate
+# tests reported together, which is exactly the situation BH exists for.
 
 write_csv(combined, file.path(results_dir, "FGA_AS_GISTIC_integrated_n20.csv"))
 cat(sprintf("\nIntegrated table saved: %sFGA_AS_GISTIC_integrated_n20.csv\n", results_dir))
