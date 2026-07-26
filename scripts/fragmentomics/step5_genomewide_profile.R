@@ -113,11 +113,24 @@ write.csv(profile_table, file.path(out_dir, "genomewide_fragmentation_profile.cs
 cat("Genome-wide profile table written:", nrow(profile_table), "rows across",
     length(unique(profile_table$sample)), "samples\n")
 
+# Build the genome-wide bin index used as the x-axis.
+#
+# gc_bins$chr must be factored BEFORE ordering. It is read as character, so a plain
+# order() sorts lexicographically - chr1, chr10, chr11 ... chr19, chr2, chr20 - and
+# bin_index then encodes that wrong sequence. Factoring profile_table$chr afterwards does
+# not undo it, because bin_index has already been assigned.
+#
+# This was previously corrected in a separate step5c script that re-derived bin_index and
+# overwrote these same output files. That left a trap: re-running step 5 silently restored
+# the lexicographic ordering. The fix is applied here instead so this script's output is
+# correct on its own, and step5c no longer needs to plot.
+chr_order <- paste0("chr", 1:22)
+gc_bins$chr <- factor(gc_bins$chr, levels = chr_order)
+
 bin_order <- gc_bins[order(gc_bins$chr, gc_bins$bin_start), c("chr", "bin_start")]
 bin_order$bin_index <- seq_len(nrow(bin_order))
 profile_table <- merge(profile_table, bin_order, by = c("chr", "bin_start"))
 
-chr_order <- paste0("chr", 1:22)
 profile_table$chr <- factor(profile_table$chr, levels = chr_order)
 profile_table <- profile_table[order(profile_table$bin_index), ]
 
@@ -131,7 +144,8 @@ group_summary <- profile_table %>%
               se_z = sd(z_ratio, na.rm = TRUE) / sqrt(n()),
               .groups = "drop")
 
-group_colors <- c("Below_floor" = "#A0B6C0", "Low_TF" = "#0063A3", "High_TF" = "#2E4057")
+# Below_floor darkened from #A0B6C0 for legibility against the ribbon fill.
+group_colors <- c("Below_floor" = "#6B8494", "Low_TF" = "#0063A3", "High_TF" = "#2E4057")
 
 fig <- ggplot(group_summary, aes(x = bin_index, y = mean_z, color = group, fill = group)) +
     geom_ribbon(aes(ymin = mean_z - se_z, ymax = mean_z + se_z), alpha = 0.15, color = NA) +
@@ -158,7 +172,9 @@ b2s11_data <- profile_table[profile_table$sample == "B2_S11", ]
 if (nrow(b2s11_data) > 0) {
     fig_flagged <- fig +
         geom_line(data = b2s11_data, aes(x = bin_index, y = z_ratio),
-                  inherit.aes = FALSE, color = "black", linewidth = 0.5, alpha = 0.6) +
+                  # Orange rather than black: black collides visually with High_TF's dark
+                  # navy, making the flagged sample hard to distinguish from a group mean.
+                  inherit.aes = FALSE, color = "#D95F02", linewidth = 0.6, alpha = 0.9) +
         labs(subtitle = "Short:long ratio (z-scored within sample), chr1-22; mean +/- SE by TF group; B2_S11 shown in black (flagged, pending final decision)")
 
     ggsave(file.path(out_dir, "fig_genomewide_fragmentation_profile_B2S11flagged.pdf"), fig_flagged, width = 14, height = 6, dpi = 300)
