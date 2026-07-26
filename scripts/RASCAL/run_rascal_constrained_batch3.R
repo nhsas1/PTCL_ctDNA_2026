@@ -207,7 +207,7 @@ for (i in 1:nrow(sample_table)) {
                 tf_from_unconstrained, diff_unconstrained))
     cat(sprintf("    Improvement: %.3f\n", improvement))
 
-    cat("  Step 5: Saving constrained heatmap...\n")
+    cat("  Step 4: Saving constrained heatmap...\n")
     heatmap_file <- file.path(sample_out,
                               paste0(SAMPLE_ID,
                                      "_constrained_heatmap.pdf"))
@@ -227,7 +227,7 @@ for (i in 1:nrow(sample_table)) {
     dev.off()
     cat("    Saved:", heatmap_file, "\n")
 
-    cat("  Step 6: Converting to absolute CN...\n")
+    cat("  Step 5: Converting to absolute CN...\n")
     seg_data$absolute_cn <- relative_to_absolute_copy_number(
       relative_copy_numbers = cn_vector,
       ploidy                = best_ploidy,
@@ -250,7 +250,7 @@ for (i in 1:nrow(sample_table)) {
                 sep = "\t", quote = FALSE, row.names = FALSE)
     cat("    Seg file saved:", seg_out, "\n")
 
-    cat("  Step 9: Saving genome plot...\n")
+    cat("  Step 6: Saving genome plot...\n")
     igv_data <- read.table(igv_file, header = TRUE,
                            sep = "\t", stringsAsFactors = FALSE,
                            skip = 2, comment.char = "")
@@ -399,12 +399,17 @@ cat("Building comparison table...\n")
 
 summary_df <- bind_rows(summary_rows)
 
+# The IMPROVED branch is only reached after both agreement thresholds have failed, so a
+# sample landing there still disagrees with ichorCNA by more than 0.10 - it has merely moved
+# closer than the unconstrained fit was. The label alone read as a pass, which mattered for
+# B3_S09: it improved by 0.184 but ends 0.199 away from ichorCNA, outside the acceptance
+# band. The wording now states that explicitly.
 summary_df <- summary_df %>%
   mutate(interpretation = case_when(
     is.na(con_MAD)         ~ "FAILED",
     con_tf_diff <= 0.05    ~ "GOOD — constrained agrees with ichorCNA",
     con_tf_diff <= 0.10    ~ "ACCEPTABLE — constrained close to ichorCNA",
-    improvement > 0.10     ~ "IMPROVED — constrained better than unconstrained",
+    improvement > 0.10     ~ "IMPROVED but still discordant — closer than unconstrained, still >0.10 from ichorCNA",
     TRUE                   ~ "POOR — neither solution agrees with ichorCNA"
   ))
 
