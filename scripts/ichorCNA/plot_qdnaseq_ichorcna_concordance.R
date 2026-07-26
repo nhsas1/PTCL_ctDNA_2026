@@ -1,3 +1,15 @@
+# QDNAseq versus ichorCNA concordance - SUPERSEDED by
+# plot_qdnaseq_ichorcna_concordance_v2.R, which adds the Bland-Altman agreement analysis
+# and the concordance_statistics.csv output.
+#
+# WARNING: this script writes the same output filenames as v2
+# (qdnaseq_ichorcna_concordance.pdf/png and concordance_per_sample.csv) into the same
+# directory. Running it will silently overwrite the committed v2 figures with the older
+# two-panel version, which reports correlation only and has no agreement analysis.
+# Run v2 instead. This file is retained for provenance.
+#
+# See the v2 header for how the comparison works.
+
 library(ggplot2)
 library(patchwork)
 

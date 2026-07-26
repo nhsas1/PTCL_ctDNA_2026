@@ -1,6 +1,24 @@
+# Concordance between the two independent copy-number callers used in this thesis:
+# QDNAseq (relative, purity-naive) and ichorCNA (purity- and ploidy-aware).
+#
+# Agreement between two methods on the same BAMs is evidence that the copy-number signal is
+# real rather than an artefact of either tool's assumptions. It is not independent
+# validation - both read the same reads - but disagreement would be a red flag.
+#
+# The two callers work at different resolutions, so QDNAseq's 15kb bins are averaged up to
+# ichorCNA's 1Mb bins before comparison. Both are placed on a log2 scale first: QDNAseq
+# exports linear relative copy number centred on 1, ichorCNA exports corrected depth
+# already in log2.
+#
+# This is version 2, which adds the Bland-Altman analysis. It writes the same output
+# filenames as plot_qdnaseq_ichorcna_concordance.R, so only one of the two should be run.
+# This is the version that produced the committed results.
+
 library(ggplot2)
 library(patchwork)
 
+# NOTE: despite the directory name, these are not RASCAL inputs. See the header of
+# scripts/QDNAseq/export_rascal_input_batch3.R.
 qdnaseq_dir_b12 <- "/scratch/alice/n/nhsas1/PTCL/RASCAL/input"
 qdnaseq_dir_b3  <- "/scratch/alice/n/nhsas1/PTCL/RASCAL/input_batch3"
 ichor_dir_b12   <- "/scratch/alice/n/nhsas1/PTCL/ichorCNA/output"
@@ -9,6 +27,9 @@ output_dir      <- "/scratch/alice/n/nhsas1/ptcl_ctdna_thesis/results/ichorCNA/q
 
 dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
 
+# A 1Mb ichorCNA bin spans roughly 66 QDNAseq 15kb bins. Requiring at least 10 usable ones
+# before averaging discards windows where most QDNAseq bins were filtered out, which would
+# otherwise contribute a noisy mean from a handful of bins.
 min_valid_bins <- 10
 
 samples_b12 <- c(sprintf("B1_S%02d", 1:5), sprintf("B2_S%02d", 1:16))
@@ -33,6 +54,9 @@ aggregate_sample <- function(sample) {
   qd <- read.delim(paths$qdnaseq, stringsAsFactors = FALSE)
   colnames(qd)[5] <- "value"
   qd$chromosome <- as.character(qd$chromosome)
+  # QDNAseq values are linear relative copy number, diploid at 1.0. Zeros are set to NA
+  # before the log2 so they become missing rather than -Inf, which would otherwise poison
+  # the bin mean below.
   qd$value[qd$value == 0] <- NA
   qd$log2 <- log2(qd$value)
 
@@ -44,6 +68,9 @@ aggregate_sample <- function(sample) {
 
   ic$qdnaseq_log2 <- NA_real_
 
+  # Assign each QDNAseq bin to the ichorCNA window containing its midpoint, then average.
+  # Using the midpoint rather than any overlap means a QDNAseq bin straddling a boundary is
+  # counted once, in a single window, so no bin is double-weighted.
   for (chrom in unique(ic$chr)) {
     ic_rows <- which(ic$chr == chrom)
     qd_chr <- qd[qd$chromosome == chrom, ]
@@ -81,11 +108,21 @@ pooled <- do.call(rbind, results_list)
 pooled$mean_log2 <- (pooled$ichor_log2 + pooled$qdnaseq_log2) / 2
 pooled$diff_log2 <- pooled$qdnaseq_log2 - pooled$ichor_log2
 
+# Bland-Altman on the pooled bins. Bias near zero means neither caller systematically reads
+# higher; the limits of agreement bound how far an individual bin can differ.
+#
+# CAVEAT for the write-up: bins are pooled across all samples and treated as independent,
+# but they are clustered within sample. The limits of agreement are therefore narrower than
+# a mixed-effects treatment would give, and should be read as descriptive rather than as a
+# formal interval. The per-sample correlations in panel C are the honest per-sample view.
 bias <- mean(pooled$diff_log2)
 sd_diff <- sd(pooled$diff_log2)
 upper_loa <- bias + 1.96 * sd_diff
 lower_loa <- bias - 1.96 * sd_diff
 
+# Regressing the difference on the mean tests for proportional bias, i.e. whether the two
+# callers diverge more at high or low copy number. A slope near zero means the agreement
+# holds across the range rather than only near diploid.
 prop_bias_fit <- lm(diff_log2 ~ mean_log2, data = pooled)
 prop_slope <- coef(prop_bias_fit)[2]
 prop_p <- summary(prop_bias_fit)$coefficients[2, 4]
