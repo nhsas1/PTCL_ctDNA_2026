@@ -204,23 +204,55 @@ the un-clipped y-axis.
 
 ## Evidence gaps — nothing to regenerate, but arguments that cannot currently be checked
 
-**The B3_S12 exclusion cannot be verified from this repository.** B3_S12 is excluded from
-the CNA cohort for ploidy non-identifiability. Its main run fits ploidy 2.831 with a 0.436
-subclone fraction, and two diagnostic re-runs exist to test whether a near-diploid solution
-explains the data comparably (`run_ichorCNA_B3_S12_diploid.slurm`,
-`run_ichorCNA_B3_S12_noSubclone.slurm`).
+**RESOLVED — diagnostic run outputs recovered from ALICE (2026-07-26).** The params files
+for all eight alternative runs are now in `results/ichorCNA/params/diagnostic_runs/`. Note
+`--ploidy "c(2)"` sets the *starting* value for ichorCNA's search, not a hard constraint, so
+a run labelled "diploid" still estimates its own ploidy — which is what makes these
+informative.
 
-Those runs completed, but **their params and seg outputs are not committed**, and the
-captured logs echo only the input parameters. Nothing in the repository records what ploidy
-or tumour fraction they produced.
+| Sample | Run | TF | Ploidy |
+|---|---|---|---|
+| **B2_S08** | main | 0.2838 | 1.767 |
+| | diploid start | 0.2867 | 1.761 |
+| | forced ploidy 2 | 0.2338 | 2.000 |
+| | no subclone | 0.2767 | 1.729 |
+| **B2_S15** | main | 0.2478 | 2.598 |
+| | diploid start | **0.1413** | **1.854** |
+| | no subclone | 0.2295 | 2.527 |
+| **B3_S12** | main | 0.0903 | 2.831 |
+| | diploid start | **0.0778** | **2.046** |
+| | no subclone | 0.0980 | 2.637 |
 
-Note also that `--ploidy "c(2)"` sets the *starting* values for ichorCNA's ploidy search,
-not a hard constraint, so a run labelled "diploid" still estimates its own ploidy. The
-argument needs the fitted output, not the requested parameter.
+**The B3_S12 exclusion is supported.** Starting the ploidy search at 2 yields 2.046;
+unconstrained it yields 2.831. Two solutions roughly 0.8 ploidy apart from the same reads is
+non-identifiability, exactly as the exclusion claims.
 
-To close this: copy `B3_S12_diploid/` and `B3_S12_noSubclone/` params files from ALICE into
-`results/ichorCNA/params/` under distinguishing names. The same applies to the B2_S08 and
-B2_S15 diagnostic runs, which underpin those two curation decisions.
+**B2_S08 is robust.** It converges to ploidy 1.73–1.77 regardless of starting point. Only
+the forced run sits at exactly 2.000, and that value is imposed rather than fitted — it also
+costs tumour fraction (0.2338 against 0.2838), which suggests the sub-diploid solution is
+the better fit.
+
+### OPEN QUESTION — B2_S15 shows the same signature as B3_S12 but was not excluded
+
+Its diploid-start run gives ploidy 1.854 and TF 0.1413; the main run gives 2.598 and 0.2478.
+That is a 0.74 ploidy gap and a **1.75-fold difference in tumour fraction** from identical
+reads — the same pattern of starting-point dependence that justifies excluding B3_S12.
+
+This matters more than it would for another sample. B2_S15 is manually curated, and that
+curation makes it the most-altered genome in the cohort (FGA 0.815, AS_50 33/39) and a
+strong influence point in every correlation. Its own evidence file
+(`PTCL_anomaly_corrections_evidence_v2.tsv`) already marks two curated segments `DISCORDANT`
+and `CAVEAT`.
+
+Two things to check before the thesis text is fixed:
+
+1. Whether the `.params.txt` files carry a log-likelihood or equivalent fit statistic. If
+   one solution fits materially better, the ambiguity resolves and no action is needed.
+2. If they fit comparably, the consistency question is why B3_S12 is excluded for ploidy
+   non-identifiability while B2_S15 is retained and curated. At minimum, run every
+   correlation with and without B2_S15, mirroring the B2_S11 treatment in fragmentomics.
+
+This is an interpretation question for supervision, not a code fix.
 
 **The expected-logR screen is mis-calibrated for high-ploidy samples.** The formula in
 `ichorCNA_anomaly_scan.R` is exact only at ploidy 2 and becomes progressively permissive as
