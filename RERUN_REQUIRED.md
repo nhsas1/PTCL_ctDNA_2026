@@ -86,9 +86,15 @@ for the metric B2_S11 is flagged on.
 
 ---
 
-## Reporting issues in committed output
+### `plot_qdnaseq_ichorcna_concordance_v2.R` — p-value underflow
 
-**`results/ichorCNA/qdnaseq_concordance/concordance_statistics.csv`** reports
-`proportional_bias_pvalue` as exactly `0`. No test returns a true zero; this is underflow
-or rounding. Report as `< 2.2e-16`, or carry more precision, before it reaches a thesis
-table.
+Fixed in `fix(ichorcna): Stop reporting a p-value of exactly zero`.
+
+| File | Status |
+|---|---|
+| `results/ichorCNA/qdnaseq_concordance/concordance_statistics.csv` | **stale** — one cell |
+| everything else in that file | verified unaffected |
+
+`proportional_bias_pvalue` currently reads `0`; it should read `2.22e-16` and be quoted in
+the thesis as `p < 2.2e-16`. The slope, bias, limits of agreement, correlations and counts
+are all unchanged, so this can be corrected by hand rather than re-running if preferred.
