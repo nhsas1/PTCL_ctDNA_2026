@@ -40,10 +40,15 @@ excluded_summary <- profile %>%
     filter(overlaps_centromere) %>%
     distinct(chr, bin_start) %>%
     arrange(chr, bin_start)
-# print(n = Inf) because this is the audit trail for a defended Methods exclusion; the
-# default tibble print truncates to 10 rows and so showed only a fifth of the excluded
-# bins. Also written to disk so the record does not live only in a SLURM log.
-print(excluded_summary, n = Inf)
+# Coerced to a plain data.frame before printing so every excluded bin is listed. This is
+# the audit trail for a defended Methods exclusion and must not be truncated. as.data.frame
+# also guarantees correct behaviour if `profile` ever becomes a tibble upstream, since
+# dplyr verbs preserve the input class and tibbles truncate to 10 rows on print.
+#
+# Do NOT use print(x, n = Inf) here: `profile` comes from merge() and so is a data.frame,
+# and print.data.frame does not accept an `n` argument - it fails with
+# "invalid 'na.print' specification", which is what broke this script on first re-run.
+print(as.data.frame(excluded_summary))
 write.csv(excluded_summary,
           file.path(out_dir, "centromere_excluded_bins.csv"), row.names = FALSE)
 
