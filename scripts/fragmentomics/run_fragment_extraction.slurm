@@ -1,4 +1,20 @@
 #!/bin/bash
+# Step 1 for Batches 1-2: extract fragment lengths from each BAM into a histogram.
+#
+# The samtools filter is the load-bearing part. -f 2 keeps properly paired reads, -q 20
+# sets mapping quality, and -F ${EXCLUDE_FLAG} drops secondary and supplementary reads
+# plus, for Batches 1-2, duplicates (3328 = 256+2048+1024). Batch 3 originals use 2304
+# because they carry no duplicate flags.
+#
+# NOTE abs() is deliberately NOT applied to TLEN. Only the leftmost mate of a pair carries
+# a positive TLEN, so each fragment is counted exactly once; taking the absolute value
+# would count every fragment twice. This looks like an omission and is not.
+#
+# chrX and chrY are excluded, appropriate for a mixed-sex cohort.
+#
+# The sort|uniq -c tabulation has no -S or -T, so it spills to the default temp directory.
+# On a node with limited space that can truncate output - see the histogram completeness
+# check in calculate_fragment_metrics.R and the note in RERUN_REQUIRED.md.
 #SBATCH --job-name=frag_extract
 #SBATCH --partition=short
 #SBATCH --array=1-34

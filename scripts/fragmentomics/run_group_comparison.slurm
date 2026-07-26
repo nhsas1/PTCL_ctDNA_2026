@@ -1,4 +1,5 @@
 #!/bin/bash
+# Step 3: three-group comparison, Kruskal-Wallis plus pairwise Wilcoxon with BH correction.
 #SBATCH --job-name=frag_groupcomp
 #SBATCH --partition=short
 #SBATCH --cpus-per-task=1

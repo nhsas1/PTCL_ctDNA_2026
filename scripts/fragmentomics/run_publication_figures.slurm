@@ -1,4 +1,6 @@
 #!/bin/bash
+# Regenerates the dedup sensitivity and batch QC figures from the step 2 outputs.
+# Does not recompute any metric.
 #SBATCH --job-name=frag_figures
 #SBATCH --partition=short
 #SBATCH --cpus-per-task=1

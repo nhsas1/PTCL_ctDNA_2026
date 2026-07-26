@@ -1,4 +1,6 @@
 #!/bin/bash
+# Step 5d: excludes centromeric bins, recomputes within-sample z-scores over the retained
+# bins, and writes the final profile figures and table.
 #SBATCH --job-name=frag_finalplot
 #SBATCH --partition=short
 #SBATCH --cpus-per-task=1

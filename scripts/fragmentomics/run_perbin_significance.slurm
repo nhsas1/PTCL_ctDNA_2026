@@ -1,4 +1,6 @@
 #!/bin/bash
+# Step 5e: per-bin Kruskal-Wallis across TF groups with BH correction over all tested bins.
+# Must be re-run after step 5d, whose z-score output it consumes.
 #SBATCH --job-name=frag_perbin
 #SBATCH --partition=short
 #SBATCH --cpus-per-task=1

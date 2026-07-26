@@ -1,4 +1,17 @@
 #!/bin/bash
+# Produces the deduplicated Batch 3 BAM set with Picard MarkDuplicates.
+#
+# Batch 3 was not deduplicated at source, unlike Batches 1-2. --REMOVE_DUPLICATES false
+# marks rather than deletes, which is what allows the downstream -F 3328 filter to work
+# and keeps the original reads recoverable.
+#
+# --READ_NAME_REGEX null disables optical duplicate detection. This does not change which
+# reads are flagged, so fragment metrics are unaffected, but it does change the reported
+# PERCENT_DUPLICATION - so Batch 3 duplicate rates are not strictly like-for-like against
+# the Batch 1-2 figures in QC_results/. Worth one Methods sentence.
+#
+# The array range 22-34 maps to sample sheet rows 23-35, which are B3_S01 to B3_S13; the
+# batch guard below fails loudly if that mapping ever drifts.
 #SBATCH --job-name=b3_markdup
 #SBATCH --partition=short
 #SBATCH --array=22-34%4

@@ -1,4 +1,14 @@
 #!/bin/bash
+# Step 5 input: bins fragments into 5Mb windows genome-wide, counting short (100-150bp) and
+# long (151-220bp) fragments per bin. Cut-offs match calculate_fragment_metrics.R exactly.
+#
+# Fragments are assigned by midpoint, so each is counted once. Note SAM POS is 1-based
+# while compute_gc_content_bins.sh emits 0-based bin starts, so a midpoint landing exactly
+# on a 5Mb boundary is assigned one bin high. That is one base in five million and does not
+# affect any result, but the two coordinate conventions do differ.
+#
+# No --array directive is set here; the range comes from submit_chunked.sh. Launching this
+# with a bare sbatch produces an empty task ID and the guard below catches it.
 #SBATCH --job-name=frag_genomebin
 #SBATCH --partition=short
 #SBATCH --cpus-per-task=4

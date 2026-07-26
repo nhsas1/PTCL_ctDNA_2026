@@ -1,4 +1,7 @@
 #!/bin/bash
+# Step 5c: redraws the step 5 figure with chromosomes in numeric rather than lexicographic
+# order. WARNING: writes the same filenames as step 5, so re-running step 5 afterwards
+# silently restores the incorrectly ordered figure.
 #SBATCH --job-name=frag_fixplot
 #SBATCH --partition=short
 #SBATCH --cpus-per-task=1

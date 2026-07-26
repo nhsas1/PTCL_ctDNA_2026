@@ -1,4 +1,11 @@
 #!/bin/bash
+# Step 1 for the deduplicated Batch 3 BAMs, feeding the dedup sensitivity analysis.
+#
+# Uses -F 3328 rather than 2304 because Picard has now marked duplicates in these files, so
+# the 1024 bit is present and must be filtered. See run_fragment_extraction.slurm.
+#
+# The 13 sample IDs are hardcoded here rather than read from fragment_sample_sheet.tsv,
+# so this is a second place the Batch 3 sample list must be kept in step.
 #SBATCH --job-name=frag_extract_b3dedup
 #SBATCH --partition=short
 #SBATCH --array=1-13%4

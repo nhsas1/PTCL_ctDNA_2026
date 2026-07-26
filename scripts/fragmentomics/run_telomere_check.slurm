@@ -1,4 +1,6 @@
 #!/bin/bash
+# Step 5f: flags terminal bins in the per-bin results. See the R script header - this does
+# not measure telomeric sequence content and cannot support a telomeric artefact argument.
 #SBATCH --job-name=frag_telocheck
 #SBATCH --partition=short
 #SBATCH --cpus-per-task=1

@@ -1,4 +1,5 @@
 #!/bin/bash
+# Step 5: DELFI-style genome-wide fragmentation profile, 5Mb bins with LOESS GC correction.
 #SBATCH --job-name=frag_gwprofile
 #SBATCH --partition=short
 #SBATCH --cpus-per-task=1

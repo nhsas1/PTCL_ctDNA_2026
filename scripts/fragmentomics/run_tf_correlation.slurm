@@ -1,4 +1,5 @@
 #!/bin/bash
+# Step 4: Spearman correlation of each fragment metric against ichorCNA tumour fraction.
 #SBATCH --job-name=frag_tfcorr
 #SBATCH --partition=short
 #SBATCH --cpus-per-task=1

@@ -1,4 +1,6 @@
 #!/bin/bash
+# Step 2: per-sample fragment metrics from the extracted histograms.
+# Small request because it reads summary histograms, not BAMs.
 #SBATCH --job-name=frag_metrics
 #SBATCH --partition=short
 #SBATCH --cpus-per-task=1
