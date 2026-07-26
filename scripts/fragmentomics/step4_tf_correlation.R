@@ -47,6 +47,32 @@ for (metric in metric_cols) {
     }
 }
 
+# Apply BH across the four metrics within each dataset.
+#
+# Step 3 corrects its pairwise family but this step previously reported all eight
+# correlations raw. The asymmetry between the two steps is the more visible problem: a
+# marker comparing the Methods sections would find one described as BH-corrected and the
+# other not, on the same cohort and the same four metrics.
+#
+# The family is the four metrics within one dataset, matching step 3, so All_samples and
+# Excluding_B2_S11 are corrected separately rather than pooled.
+#
+# The three significant correlations survive correction in both datasets, so this changes
+# no conclusion; it makes the reported values defensible.
+#
+# Ties caveat, which belongs in the Methods rather than in code: cor.test cannot compute an
+# exact Spearman p-value with ties, so these are normal approximations. That matters most
+# for peak_fragment_length, which takes only about six distinct values across 34 samples,
+# and for long_fragment_fraction, where six samples are tied at exactly zero - see the data
+# integrity note in RERUN_REQUIRED.md, since those zeros are themselves suspect.
+# Initialise the column before the loop: assigning into a subset of a column that does not
+# yet exist sizes it by the highest index touched, leaving a short vector.
+corr_results$p_adjusted <- NA_real_
+for (ds in unique(corr_results$dataset)) {
+    idx <- which(corr_results$dataset == ds)
+    corr_results$p_adjusted[idx] <- p.adjust(corr_results$p_value[idx], method = "BH")
+}
+
 write.csv(corr_results, file.path(out_dir, "tf_correlation_results.csv"), row.names = FALSE)
 cat("TF correlation results written:", nrow(corr_results), "rows\n")
 print(corr_results)
