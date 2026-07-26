@@ -98,6 +98,18 @@ cat("GISTIC run found zero significant amplification peaks in the n=20 cohort.\n
 # The arguments each way: the three predictors are near-redundant views of the same
 # underlying burden, so correcting across them is conservative; but they are three separate
 # tests reported together, which is exactly the situation BH exists for.
+p_raw <- c(FGA   = cor_fga_gtotal$p.value,
+           AS_50 = cor_as50_gtotal$p.value,
+           AS_25 = cor_as25_gtotal$p.value)
+p_bh  <- p.adjust(p_raw, method = "BH")
+
+cat("\n=== Multiple-testing correction (Benjamini-Hochberg, 3 tests) ===\n")
+for (nm in names(p_raw)) {
+  cat(sprintf("%-6s vs GISTIC total: p_raw = %.4f   p_BH = %.4f   %s\n",
+              nm, p_raw[[nm]], p_bh[[nm]],
+              if (p_bh[[nm]] < 0.05) "significant after correction"
+              else "NOT significant after correction"))
+}
 
 write_csv(combined, file.path(results_dir, "FGA_AS_GISTIC_integrated_n20.csv"))
 cat(sprintf("\nIntegrated table saved: %sFGA_AS_GISTIC_integrated_n20.csv\n", results_dir))
