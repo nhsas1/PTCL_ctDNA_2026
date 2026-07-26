@@ -1,4 +1,22 @@
 #!/bin/bash
+# Main production ichorCNA run for Batches 1-2. Fits tumour fraction and ploidy jointly
+# from the 1Mb WIG files produced by run_readCounter_all.slurm.
+#
+# Key parameters and why they are set this way:
+#   --ploidy "c(2,3)"    starting values for the ploidy search, allowing both a near-diploid
+#                        and a whole-genome-doubled solution to be considered. These are
+#                        initialisations, not constraints; the fitted ploidy can land
+#                        between or outside them.
+#   --normal "c(0.5..0.99)"  candidate normal fractions. The grid is weighted towards high
+#                        normal content because plasma cfDNA is mostly non-tumour, so most
+#                        samples sit at low tumour fraction.
+#   --maxCN 5            caps the state space. At ~1x coverage higher states cannot be
+#                        distinguished reliably and only add fitting instability.
+#   --includeHOMD False  homozygous deletion is not modelled. At this coverage and tumour
+#                        fraction a true zero-copy state is indistinguishable from a deep
+#                        heterozygous loss, so allowing it invites overcalling.
+#   --chrs "c(1:22)"     autosomes only. This is why no X or Y segment exists anywhere
+#                        downstream, in FGA, the aneuploidy score or GISTIC.
 #SBATCH --job-name=ichorCNA_all
 #SBATCH --partition=short
 #SBATCH --time=02:00:00

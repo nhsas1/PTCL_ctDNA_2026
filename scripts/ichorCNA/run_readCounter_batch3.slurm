@@ -1,4 +1,7 @@
 #!/bin/bash
+# Batch 3 counterpart of run_readCounter_all.slurm, producing 1Mb WIG files for the 13
+# Batch 3 samples. Same bin size and quality settings, so counts remain comparable across
+# batches, with the caveat that Batch 3 BAMs retain their duplicates.
 #SBATCH --job-name=readCounter_B3
 #SBATCH --partition=short
 #SBATCH --time=01:00:00

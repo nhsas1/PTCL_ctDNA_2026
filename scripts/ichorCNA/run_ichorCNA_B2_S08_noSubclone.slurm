@@ -1,4 +1,16 @@
 #!/bin/bash
+# Diagnostic re-run of B2_S08 with subclonal states disabled (--scStates "c()"), testing
+# whether the anomalous calls were driven by the subclonal component rather than by real
+# copy-number change.
+#
+# NOTE on --ploidy: this sets the starting values for ichorCNA's ploidy search, not a hard
+# constraint. A run labelled "diploid" begins the search at 2 but the fitted ploidy is still
+# estimated and can move away from it. Any argument resting on these runs needs the fitted
+# output, not the requested parameter.
+#
+# EVIDENCE GAP: the params and seg files these alternative runs produced are not committed
+# to the repository, and the captured logs echo the input parameters only. Their outcomes
+# therefore cannot be checked from the repository as it stands.
 #SBATCH --job-name=ichor_B2S08_noSub
 #SBATCH --partition=short
 #SBATCH --time=00:30:00

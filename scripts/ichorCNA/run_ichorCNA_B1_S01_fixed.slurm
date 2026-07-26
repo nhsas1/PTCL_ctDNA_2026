@@ -1,4 +1,6 @@
 #!/bin/bash
+# Re-run of B1_S01 alone, calling runIchorCNA.R directly rather than through the batch
+# wrapper. Parameters are identical to the main run; only the invocation path differs.
 #SBATCH --job-name=ichorCNA_B1_S01
 #SBATCH --partition=short
 #SBATCH --time=02:00:00

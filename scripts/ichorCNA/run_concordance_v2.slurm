@@ -1,4 +1,6 @@
 #!/bin/bash
+# Runs the current QDNAseq-vs-ichorCNA concordance analysis, including the Bland-Altman
+# agreement panel. This is the version that produced the committed figures and statistics.
 #SBATCH --job-name=concordance_v2
 #SBATCH --partition=short
 #SBATCH --time=00:30:00

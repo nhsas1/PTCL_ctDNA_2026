@@ -1,4 +1,11 @@
 #!/bin/bash
+# Converts Batches 1-2 BAMs into 1Mb read-count WIG files with HMMcopy readCounter.
+# This is the input step for ichorCNA proper: ichorCNA models binned counts, not reads, so
+# nothing in run_ichorCNA_all.slurm will work until this has produced its WIG files.
+#
+# 1Mb bins are coarse by design. At ~1x coverage a smaller bin carries too few reads for a
+# stable ratio, and ichorCNA needs a stable per-bin signal to fit tumour fraction and
+# ploidy jointly. The bin size is validated against 500kb in plot_bin_size_comparison.R.
 #SBATCH --job-name=readCounter_all
 #SBATCH --partition=short
 #SBATCH --time=01:00:00

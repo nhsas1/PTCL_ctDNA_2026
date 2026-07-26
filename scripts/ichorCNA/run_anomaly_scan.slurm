@@ -1,4 +1,9 @@
 #!/bin/bash
+# Runs ichorCNA_anomaly_scan.R, which screens every segment for calls that are physically
+# inconsistent with the fitted tumour fraction and ploidy. This is the triage step that
+# produced the shortlist for manual curation; it flags candidates, it does not decide them.
+#
+# Short and small because it reads existing seg files rather than reprocessing any BAM.
 #SBATCH --job-name=ichor_anomaly
 #SBATCH --partition=short
 #SBATCH --time=00:20:00

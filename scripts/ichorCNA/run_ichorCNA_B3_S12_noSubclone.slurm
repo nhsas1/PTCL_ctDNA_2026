@@ -1,4 +1,15 @@
 #!/bin/bash
+# Diagnostic re-run of B3_S12 with subclonal states disabled, testing whether the high
+# fitted ploidy is an artefact of the subclonal component absorbing signal.
+#
+# NOTE on --ploidy: this sets the starting values for ichorCNA's ploidy search, not a hard
+# constraint. A run labelled "diploid" begins the search at 2 but the fitted ploidy is still
+# estimated and can move away from it. Any argument resting on these runs needs the fitted
+# output, not the requested parameter.
+#
+# EVIDENCE GAP: the params and seg files these alternative runs produced are not committed
+# to the repository, and the captured logs echo the input parameters only. Their outcomes
+# therefore cannot be checked from the repository as it stands.
 #SBATCH --job-name=ichor_B3S12_noSub
 #SBATCH --partition=short
 #SBATCH --time=00:30:00

@@ -1,4 +1,10 @@
 #!/bin/bash
+# Main production ichorCNA run for Batch 3. Parameters match run_ichorCNA_all.slurm so the
+# batches remain comparable; see that file for why each is set as it is.
+#
+# Batch 3 BAMs retain their duplicates, which inflates apparent depth. ichorCNA works from
+# ratios between bins rather than absolute depth, so this affects the noise level more than
+# the fitted tumour fraction, but it is a batch difference worth stating.
 #SBATCH --job-name=ichorCNA_B3
 #SBATCH --partition=short
 #SBATCH --time=02:00:00
