@@ -1,3 +1,12 @@
+# Genome-wide GISTIC2 significance landscape: amplifications above the axis, deletions
+# below, with significant peaks labelled by cytoband.
+#
+# The y-axis is -log10(q), so height is statistical confidence that a region is altered
+# more often than expected by chance, NOT how large or how frequent the alteration is. A
+# tall peak at a locus altered in a few samples means the recurrence is unlikely to be
+# chance; it does not mean the event is common. Frequency is reported separately by
+# per_sample_GISTIC.R.
+
 library(dplyr)
 library(readr)
 library(ggplot2)
@@ -32,6 +41,10 @@ scores <- read_tsv(scores_file, show_col_types = FALSE) %>%
   ) %>%
   filter(!is.na(chr), chr %in% 1:22)
 
+# Lay the chromosomes end to end so the whole genome plots on one axis. Lengths are taken
+# from the furthest marker GISTIC scored on each chromosome rather than from the hg38
+# reference, so they are the assayed extent. That is what is wanted here - the axis should
+# span what was measured - but the values are not reference chromosome lengths.
 chr_sizes <- scores %>%
   group_by(chr) %>%
   summarise(chr_len = max(end), .groups = "drop") %>%
@@ -92,10 +105,22 @@ palette_amp <- "#C0392B"
 palette_del <- "#2471A3"
 sig_line_col <- "grey40"
 
+# GISTIC's conventional significance threshold is q < 0.25, which is far more permissive
+# than the usual 0.05. That is deliberate in the GISTIC framework: q here is an FDR across
+# thousands of genomic regions, and the analysis is a screen for candidate driver loci to be
+# followed up, not a confirmatory test. The 0.01 line is drawn as a stricter reference so a
+# reader can see which peaks would survive a conventional threshold.
+#
+# qthresh_10 is computed but never plotted.
 qthresh_25 <- -log10(0.25)
 qthresh_10 <- -log10(0.10)
 qthresh_01 <- -log10(0.01)
 
+# Fixed axis ceiling. Peaks are clamped to it by the pmin calls below rather than being
+# allowed to rescale the plot, which keeps the amplification and deletion panels on a
+# common scale so their heights can be compared directly. A peak more significant than
+# 10^-8.5 would saturate at the ceiling rather than plot proportionally; nothing in the
+# current results reaches it, the most significant being -log10(q) = 7.41 at 4q35.1.
 y_max <- 8.5
 
 p_amp <- ggplot() +
