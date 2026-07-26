@@ -39,6 +39,28 @@ calc_metrics <- function(hist_path) {
     h <- h[order(h$fragment_length), ]
     total <- sum(h$count)
 
+    # Completeness check on the histogram.
+    #
+    # Extraction writes fragment lengths 50-1000bp, so a histogram whose maximum stops well
+    # short of 1000 has been truncated - by an interrupted write, a sort spilling to a full
+    # temp directory, or a chunk that failed without the submitter noticing. Truncation near
+    # 250bp is invisible in n_fragments and median_fragment_length, because the affected
+    # tail is a tiny fraction of reads, but it silently zeroes long_fragment_fraction.
+    #
+    # This matters: six samples in the committed metrics table report a long fragment
+    # fraction of exactly 0 over 7.5-11.3 million fragments, which plasma cfDNA cannot
+    # produce - it always carries a di-nucleosomal population near 330bp. See
+    # RERUN_REQUIRED.md. Warn rather than stop, so a partial run still produces a table,
+    # but make the problem visible instead of letting it pass as a real measurement.
+    max_len <- max(h$fragment_length)
+    if (max_len < 500) {
+        warning(sprintf(
+            "%s: histogram stops at %dbp, expected up to 1000bp. Likely truncated - long_fragment_fraction will be understated.",
+            basename(hist_path), max_len), call. = FALSE)
+        cat(sprintf("  WARNING: %s truncated at %dbp (expected 1000bp)\n",
+                    basename(hist_path), max_len))
+    }
+
     cum <- cumsum(h$count)
     median_idx <- which(cum >= total / 2)[1]
     median_len <- h$fragment_length[median_idx]
