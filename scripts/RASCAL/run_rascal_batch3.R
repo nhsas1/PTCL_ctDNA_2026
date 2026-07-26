@@ -172,9 +172,15 @@ for (SAMPLE_ID in all_samples) {
       cellularity_step      = 0.01
     )
 
+    # When no solution passes RASCAL's quality filters, fall back to the raw grid minimum
+    # so the sample still produces output. Record that this happened: without the flag the
+    # row is indistinguishable from a genuine fit, because n_solutions becomes 1,
+    # ambiguous becomes FALSE and status stays SUCCESS.
+    fallback_used <- FALSE
     if (nrow(best) == 0) {
       cat("    WARNING: No solutions passed filters",
           "— using grid minimum\n")
+      fallback_used <- TRUE
       best <- grid %>%
         arrange(distance) %>%
         slice(1) %>%
@@ -343,6 +349,7 @@ for (SAMPLE_ID in all_samples) {
       rascal_MAD         = round(best_distance, 4),
       n_solutions        = n_solutions,
       ambiguous          = n_solutions > 1,
+      fallback_used      = fallback_used,
       segments_used      = n_after,
       output_segments    = nrow(output_segs),
       ichorcna_tf        = ICHORCNA_TF,
@@ -363,6 +370,7 @@ for (SAMPLE_ID in all_samples) {
       rascal_MAD         = NA,
       n_solutions        = NA,
       ambiguous          = NA,
+      fallback_used      = NA,
       segments_used      = NA,
       output_segments    = NA,
       ichorcna_tf        = ICHORCNA_TF,
@@ -404,10 +412,15 @@ print(summary_df[, c("sample", "rascal_ploidy",
                      "status")])
 cat("\n")
 cat("Successful:               ",
-    sum(summary_df$status == "SUCCESS"), "/ 13\n")
+    sum(summary_df$status == "SUCCESS"), "/", nrow(summary_df), "\n")
 cat("Ambiguous (need curation):",
     sum(summary_df$ambiguous == TRUE, na.rm = TRUE), "\n")
-cat("UNRESOLVABLE (low TF):    ",
+cat("Fallback to grid minimum: ",
+    sum(summary_df$fallback_used == TRUE, na.rm = TRUE), "\n")
+# UNRESOLVABLE is assigned when rascal_cellularity is NA, which means the RASCAL call
+# failed outright. It has nothing to do with tumour fraction, so the previous
+# "(low TF)" heading described a pipeline failure as a biological finding.
+cat("RASCAL failed (no fit):   ",
     sum(summary_df$tf_agreement == "UNRESOLVABLE",
         na.rm = TRUE), "\n")
 cat("Output directory:", OUTPUT_DIR, "\n")
