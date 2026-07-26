@@ -27,6 +27,9 @@ for (i in seq_len(nrow(metadata))) {
   sample_id  <- metadata$sample_id[i]
   bam_path   <- metadata$bam_path[i]
   sample_dir <- file.path(OUTPUT_DIR, sample_id)
+  # Created here because it is absent for any sample that failed in the main pipeline,
+  # where pdf() would otherwise error into the tryCatch and silently produce no plots.
+  if (!dir.exists(sample_dir)) dir.create(sample_dir, recursive=TRUE)
   cat('Plotting', sample_id, '(', i, 'of', nrow(metadata), ')\n')
   tryCatch({
     readCounts <- binReadCounts(bins, bamfiles=bam_path, bamnames=sample_id)

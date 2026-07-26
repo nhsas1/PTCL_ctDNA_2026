@@ -28,6 +28,11 @@ for (i in seq_len(nrow(metadata))) {
   sample_id  <- metadata$sample_id[i]
   bam_path   <- metadata$bam_path[i]
   sample_dir <- file.path(OUTPUT_DIR, sample_id)
+  # The main pipeline normally creates this directory, but it will be absent for any
+  # sample that failed there. Without it pdf() errors, the error is swallowed by the
+  # tryCatch below, and the sample ends up with no diagnostic plots at all - which is
+  # exactly the sample whose plots are most worth looking at.
+  if (!dir.exists(sample_dir)) dir.create(sample_dir, recursive=TRUE)
 
   cat('Plotting', sample_id, '(', i, 'of', nrow(metadata), ')\n')
 
