@@ -1,4 +1,6 @@
 #!/bin/bash
+# Submits generate_plots_batch3.R, producing four diagnostic QC plots per Batch 3 sample.
+# Resources and caveats match run_generate_plots.slurm.
 #SBATCH --job-name=plots_B3
 #SBATCH --output=/scratch/alice/n/nhsas1/PTCL/scripts/logs/plots_batch3_%j.out
 #SBATCH --error=/scratch/alice/n/nhsas1/PTCL/scripts/logs/plots_batch3_%j.err

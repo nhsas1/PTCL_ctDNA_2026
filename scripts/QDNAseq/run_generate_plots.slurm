@@ -1,4 +1,11 @@
 #!/bin/bash
+# Submits generate_plots.R, producing four diagnostic QC plots per Batch 1-2 sample.
+#
+# 4 hours is shorter than the main pipeline because plotting stops before the seg export,
+# but memory stays at 32G since this script re-runs the full pipeline from BAM and holds
+# the same objects. cpus-per-task=4 is unused.
+#
+# No exit code is captured here, so a failed R run is only visible in the .err log.
 #SBATCH --job-name=QDNAseq_plots
 #SBATCH --output=/scratch/alice/n/nhsas1/PTCL/scripts/logs/plots_%j.out
 #SBATCH --error=/scratch/alice/n/nhsas1/PTCL/scripts/logs/plots_%j.err
