@@ -40,7 +40,12 @@ excluded_summary <- profile %>%
     filter(overlaps_centromere) %>%
     distinct(chr, bin_start) %>%
     arrange(chr, bin_start)
-print(excluded_summary)
+# print(n = Inf) because this is the audit trail for a defended Methods exclusion; the
+# default tibble print truncates to 10 rows and so showed only a fifth of the excluded
+# bins. Also written to disk so the record does not live only in a SLURM log.
+print(excluded_summary, n = Inf)
+write.csv(excluded_summary,
+          file.path(out_dir, "centromere_excluded_bins.csv"), row.names = FALSE)
 
 profile_clean <- profile[!profile$overlaps_centromere, ]
 cat("\nRows retained after exclusion:", nrow(profile_clean), "of", nrow(profile), "\n")
