@@ -36,13 +36,15 @@ for chr in chr{1..22}; do
         {
             seq = toupper($0)
             n = length(seq)
-            gc = 0; at = 0; nn = 0
-            for (i = 1; i <= n; i++) {
-                b = substr(seq, i, 1)
-                if (b == "G" || b == "C") gc++
-                else if (b == "A" || b == "T") at++
-                else nn++
-            }
+            # Count bases by deleting everything else and measuring the remaining length.
+            # This replaces a per-character substr() loop which, across the ~2.9Gb genome,
+            # ran roughly 3e9 iterations and was very likely to exceed the one hour
+            # walltime. A timeout mid-run would have been quietly damaging: the last
+            # chromosomes would simply be missing from the GC table, and the merge in
+            # step5_genomewide_profile.R would silently drop their bins rather than error.
+            t = seq; gsub(/[^GC]/, "", t); gc = length(t)
+            t = seq; gsub(/[^AT]/, "", t); at = length(t)
+            nn = n - gc - at
             valid = gc + at
             total = valid + nn
             gc_frac = (valid > 0) ? gc / valid : "NA"
