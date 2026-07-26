@@ -1,8 +1,11 @@
 # Repository cleanup proposal
 
-**Nothing in this document has been executed.** Renames touch paths in many scripts, so
-every item here needs sign-off before anything moves. Items are ordered by value-to-risk:
-the early ones are additive and safe, the later ones touch working code.
+**Status: items 1–3 and 5 of section 6 are APPLIED. Item 4 needs ALICE access. Section 4c–4h
+remains proposed and unexecuted.**
+
+Renames touch paths in many scripts, so the remaining items need sign-off before anything
+moves. Items are ordered by value-to-risk: the early ones are additive and safe, the later
+ones touch working code.
 
 ---
 
@@ -207,16 +210,53 @@ thesis figure with no provenance, for the metric B2_S11 is flagged on.
 
 ---
 
-## 6. Suggested order
+## 6. Suggested order and status
 
-1. Commit `CLAUDE.md` (done alongside this proposal — it was untracked).
-2. Add the README (additive, no risk).
-3. `.gitignore` negation rule for the curation backups, drop the two duplicate lines.
-4. Copy the missing diagnostic params files off ALICE.
-5. Retire or archive concordance v1, and fix the step5c filename collision — these two are
-   live hazards rather than tidiness.
-6. Everything in section 4c–4e — path and log consolidation — as one deliberate pass,
-   ideally with `PROJECT_ROOT` variables, after the thesis numbers are settled.
+1. **APPLIED** — Commit `CLAUDE.md`; it was untracked.
+2. **APPLIED** — Expand the README. The Repository Structure section was empty.
+3. **APPLIED** — `.gitignore` negation rule for the curation backups, duplicate `*.bam` and
+   `*.bai` lines dropped. Verified that bam/bai remain ignored, the three curation backups
+   are now explicitly un-ignored, and ordinary working `.ORIGINAL` backups elsewhere are
+   still ignored.
+4. **BLOCKED — needs ALICE access.** Copy the missing diagnostic params files. This machine
+   has no `/scratch/alice` mount and cannot resolve the host, so it cannot be done from
+   here. See the commands below.
+5. **APPLIED** — Both live hazards removed:
+   - Concordance v1 and its wrapper moved to `scripts/archive/` with a README stating
+     nothing there should be run. Only v2 now writes those filenames.
+   - The step5c collision is gone at the source. The chromosome-ordering bug is fixed in
+     `step5_genomewide_profile.R` itself (the bin index was built from an unfactored
+     character column, so it sorted chr1, chr10, chr11 … chr2), along with the two palette
+     corrections. Step 5c is now diagnostic-only and produces no figures.
+6. **PROPOSED, NOT APPLIED** — Section 4c–4h: path and log consolidation, the
+   `export_rascal_input` rename, and metadata locations. Best done as one deliberate pass,
+   ideally introducing `PROJECT_ROOT` variables, after the thesis numbers are settled.
 
-Items 1–5 are safe to do now. Item 6 changes paths in every script and is better done once,
-after re-running, than piecemeal before.
+### Item 4 — commands to run on ALICE
+
+The B2_S08, B2_S15 and B3_S12 diagnostic runs completed, but only their console logs were
+committed and those echo input parameters only. Nothing records what ploidy or tumour
+fraction they produced, which is what the B3_S12 exclusion and the three curation decisions
+actually rest on.
+
+From the repository root, with ALICE reachable:
+
+```bash
+ICHOR=/scratch/alice/n/nhsas1/PTCL/ichorCNA
+DEST=results/ichorCNA/params/diagnostic_runs
+mkdir -p "$DEST"
+
+for run in B2_S08_diploid B2_S08_forcedDiploid B2_S08_noSubclone B2_S08_rerun \
+           B2_S15_diploid B2_S15_noSubclone; do
+    cp "$ICHOR/output/$run/"*.params.txt "$DEST/${run}.params.txt"
+done
+for run in B3_S12_diploid B3_S12_noSubclone; do
+    cp "$ICHOR/output_batch3/$run/"*.params.txt "$DEST/${run}.params.txt"
+done
+```
+
+Check the resulting ploidy and tumour fraction for each run against the main-run values in
+`results/ichorCNA/ichorCNA_summary.csv` (B3_S12: TF 0.0903, ploidy 2.831, subclone fraction
+0.436). If the near-diploid solution fits comparably, that is the evidence the exclusion
+needs. Bear in mind `--ploidy "c(2)"` sets the starting value for the search, not a hard
+constraint, so the fitted ploidy may have moved away from 2.
