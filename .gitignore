@@ -30,10 +30,9 @@ __pycache__/
 *patient_ids*
 
 # ichorCNA large outputs — never push these
+# (*.bam and *.bai are already covered by the sequencing data rules above)
 *.wig
 *.RData
-*.bam
-*.bai
 *_CNA_chr*.pdf
 *_genomeWide*.pdf
 *_bias.pdf
@@ -45,3 +44,8 @@ __pycache__/
 *.OLD_JUNE17_BACKUP
 *.ORIGINAL
 *.bak_*
+
+# Exception: the pre-curation state of the three manually corrected samples is kept
+# deliberately. These are provenance for the curation decisions, not stray backups —
+# without them there is no record of what the ichorCNA calls were before intervention.
+!results/ichorCNA/corrected_seg_files/originals_backup/*.ORIGINAL
