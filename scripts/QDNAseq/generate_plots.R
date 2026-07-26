@@ -44,7 +44,11 @@ for (i in seq_len(nrow(metadata))) {
     # a sample with heavy duplication or a failed library shows up here as an unusually
     # wide or skewed spread of per-bin counts.
     pdf(file.path(sample_dir, paste0(sample_id, '_01_rawCounts.pdf')), width=14, height=5)
-    plot(readCounts, logTransform=FALSE, ylim=c(-50, 200),
+    # The y-axis was previously fixed at c(-50, 200). At 15kb bins and 150bp reads that
+    # is roughly the expected count at 1x coverage, but cohort coverage reaches 1.77x, so
+    # the highest-coverage samples were clipped at the top of the axis and their true
+    # spread was not visible. Left to auto-scale so no sample is silently truncated.
+    plot(readCounts, logTransform=FALSE,
          main=paste(sample_id, '- Raw Read Counts'))
     dev.off()
 

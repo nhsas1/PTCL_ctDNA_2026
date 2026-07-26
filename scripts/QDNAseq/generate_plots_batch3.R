@@ -35,7 +35,10 @@ for (i in seq_len(nrow(metadata))) {
     readCounts <- binReadCounts(bins, bamfiles=bam_path, bamnames=sample_id)
     # Plot 1 — Raw counts
     pdf(file.path(sample_dir, paste0(sample_id, '_01_rawCounts.pdf')), width=14, height=5)
-    plot(readCounts, logTransform=FALSE, ylim=c(-50, 200),
+    # The fixed y-axis c(-50, 200) was copied from the Batch 1-2 script, where it was set
+    # against deduplicated counts. Batch 3 is not deduplicated, so its per-bin counts run
+    # higher still and the clipping was worse here than in the original. Auto-scaled.
+    plot(readCounts, logTransform=FALSE,
          main=paste(sample_id, '- Raw Read Counts'))
     dev.off()
     readCountsFiltered <- applyFilters(readCounts, residual=FALSE, blacklist=FALSE)
