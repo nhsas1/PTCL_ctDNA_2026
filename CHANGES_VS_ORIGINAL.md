@@ -80,21 +80,18 @@ results with an older analysis.
 
 ## Results status
 
-**The code fixes are committed here. The regenerated results are not yet.**
+**Complete.** All eight ALICE jobs completed, the outputs were synced and committed
+(`ab72653`), and this repository now carries the regenerated results. Verified:
 
-All eight ALICE jobs completed and outputs were synced into the working tree there, but the
-commit was not made. This repository still carries the pre-fix values — e.g.
-`genomewide_perbin_significance.csv` shows chr4 at `p_adj = 0.0280`, and
-`tf_correlation_results.csv` has no `p_adjusted` column.
+- `genomewide_perbin_significance.csv` shows chr4 and chr19 both at `p_adj = 0.0499`
+- `tf_correlation_results.csv` carries `p_adjusted`
+- `RASCAL_batch3_summary.csv` carries `rascal_expected_tf` and `fallback_used`
 
-To close this, on ALICE:
-
-```bash
-cd /scratch/alice/n/nhsas1/PTCL/review_scripts
-git add results/
-git commit -m "chore: Sync regenerated results from ALICE"
-git pull --rebase && git push
-```
+Not regenerated, and correctly so: `fragmentomics_metrics_summary.csv` and
+`batch3_dedup_vs_original_comparison.csv` are step 2 outputs and step 2 was not re-run;
+`group_comparison_summary_stats.csv` holds medians and quartiles, which the correction does
+not touch. `fig_batch3_longfragfraction_dedup_sensitivity.png` also did not regenerate while
+both siblings did — confirming it has no source script.
 
 ### What the re-run showed
 
