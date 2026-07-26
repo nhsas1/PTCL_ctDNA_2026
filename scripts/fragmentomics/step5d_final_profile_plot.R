@@ -45,6 +45,32 @@ print(excluded_summary)
 profile_clean <- profile[!profile$overlaps_centromere, ]
 cat("\nRows retained after exclusion:", nrow(profile_clean), "of", nrow(profile), "\n")
 
+# Recompute the within-sample z-score over the retained bins.
+#
+# This is necessary, not cosmetic. z_ratio was computed in step5_genomewide_profile.R using
+# a mean and sd taken over ALL bins, including the centromeric ones this script removes -
+# the same bins documented above as extreme z>3 outliers. Dropping an outlier from the plot
+# after it has already inflated the sd used to scale every other bin does not remove its
+# influence: it leaves every retained z-score compressed towards zero.
+#
+# It also does not cancel out across samples. Exclusion is per chromosome but z-scaling is
+# per sample, so each sample's mean and sd were distorted by a different amount. The
+# resulting shift is therefore not a monotone transform across samples, and step5e's
+# Kruskal-Wallis tests compare samples within a bin - so the contamination can change rank
+# order and hence the p-values.
+#
+# Residual limitation: the LOESS GC fit in step5 still included the centromeric bins, so
+# corrected_ratio itself carries a small amount of their influence. Removing that properly
+# means moving the exclusion upstream into process_sample, before the loess call. The
+# z-score is the dominant effect and the one step5e consumes.
+profile_clean <- profile_clean %>%
+    group_by(sample) %>%
+    mutate(z_ratio = (corrected_ratio - mean(corrected_ratio, na.rm = TRUE)) /
+                     sd(corrected_ratio, na.rm = TRUE)) %>%
+    ungroup() %>%
+    as.data.frame()
+cat("z_ratio recomputed within sample over retained bins only\n")
+
 chr_order <- paste0("chr", 1:22)
 profile_clean$chr <- factor(profile_clean$chr, levels = chr_order)
 profile_clean$group <- factor(profile_clean$group, levels = c("Below_floor", "Low_TF", "High_TF"))
