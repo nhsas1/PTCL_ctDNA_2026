@@ -278,17 +278,53 @@ biologically achievable in plasma cfDNA, which always carries a di-nucleosomal p
 near 330bp. The likely cause is fragment histogram files truncated near 250bp, which would
 be invisible in `n_fragments` and `median_fragment_length`.
 
-This gates the interpretation of B2_S11, whose flag rests on a long-fragment fraction 59x
-the next highest — a ratio against a possibly artefactual baseline.
+**RESOLVED 2026-07-26 — and the cause is not what was suspected.** The histograms are NOT
+truncated. Checking all 34 on ALICE:
 
-Diagnostic, on ALICE:
+| Samples | max fragment length |
+|---|---|
+| 33 of 34 | **242–294 bp** |
+| B2_S11 | **864 bp** |
 
-```
-awk 'NR>1{if($1>m)m=$1}END{print FILENAME, m, NR}' fragment_histograms/*.tsv
-```
+The six zero values are arithmetically correct. Their maxima are B1_S02 242, B2_S01 250,
+B2_S02 248, B2_S03 246, B2_S05 247, B2_S07 248 — all at or below the 250bp threshold, which
+is a strict `>`, so they genuinely contain no qualifying fragment. Every sample reporting a
+non-zero fraction has a maximum above 250. The correspondence is exact.
 
-If the six samples show `max(fragment_length)` near 250, the histograms are truncated and
-every long-fragment result needs regenerating from the BAMs.
+**The real problem is upstream: the `-f 2` proper-pair filter in
+`run_fragment_extraction.slurm` removes the di-nucleosomal population.**
+
+BWA-MEM decides "properly paired" from the insert-size distribution it infers per library,
+and clears that flag for pairs outside the expected window. Filtering on `-f 2` therefore
+imposes a library-specific ceiling on observable fragment length. That ceiling lands at
+242–294bp here, which is why no sample shows the ~330bp di-nucleosomal peak that plasma
+cfDNA always carries. The `$9 <= 1000` cap in the awk never binds; the proper-pair flag
+binds first.
+
+Consequences:
+
+1. **`long_fragment_fraction` does not measure what it claims.** It measures the sliver
+   between 250bp and a library-specific proper-pair ceiling, not the genomic-DNA
+   contamination indicator it was designed as. For six samples that sliver is empty.
+2. **B2_S11's flag is confounded.** Its 864bp maximum means BWA-MEM inferred a much wider
+   insert-size distribution for that library, so far more long fragments survived `-f 2`.
+   The "59x the next highest" figure is therefore substantially an artefact of differential
+   filtering rather than a clean contamination magnitude. B2_S11's library *is* genuinely
+   different — an 864bp ceiling against a cohort of 242–294 is a real signal, and arguably
+   a cleaner one — but the quantitative claim cannot stand as written.
+3. **The other three metrics are unaffected.** Median fragment length (149–203), peak
+   (165–171) and the short:long ratio (windows 100–150 and 151–220) all sit below the
+   lowest ceiling of 242bp, so nothing is censored within those ranges. **Steps 3, 4 and 5
+   results stand**, including the group comparisons and tumour fraction correlations.
+
+Two options, neither urgent:
+
+- **Re-extract without `-f 2`**, substituting explicit checks that both mates are mapped to
+  the same chromosome. This is a new analysis, not a fix, and would change every
+  fragmentomics metric.
+- **Drop `long_fragment_fraction` and restate the B2_S11 flag** in terms of its proper-pair
+  ceiling (864bp against a cohort maximum of 294bp). Defensible, needs no re-run, and is
+  arguably the stronger statement.
 
 **`fig_batch3_longfragfraction_dedup_sensitivity.png` has no source script.** No script in
 the repository writes that filename. It is a committed thesis figure with no provenance,
