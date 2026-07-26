@@ -136,15 +136,27 @@ seg_files <- list.files(OUTPUT_DIR, pattern="\\.seg$",
 seg_files <- seg_files[!grepl("ALL_SAMPLES", seg_files)]
 
 if (length(seg_files) > 0) {
-  all_segs <- do.call(rbind, lapply(seg_files, function(f) {
+  # A seg file that fails to parse yields NULL and is dropped by rbind, but the
+  # completion count below previously reported length(seg_files) regardless. A
+  # truncated or malformed file was therefore excluded from the master table while
+  # still counting as a completed sample. Track what actually parsed instead.
+  parsed <- lapply(seg_files, function(f) {
     tryCatch(read.table(f, header=TRUE, sep="\t", stringsAsFactors=FALSE),
              error=function(e) NULL)
-  }))
+  })
+  failed <- seg_files[vapply(parsed, is.null, logical(1))]
+  if (length(failed) > 0) {
+    cat("WARNING:", length(failed), "seg file(s) failed to parse and are NOT in the",
+        "master file:\n")
+    cat(paste0("  ", failed, collapse="\n"), "\n")
+  }
+
+  all_segs <- do.call(rbind, parsed)
   write.table(all_segs,
               file.path(OUTPUT_DIR, "ALL_SAMPLES_batch3_combined.seg"),
               sep="\t", quote=FALSE, row.names=FALSE)
   cat("Master seg file written with", nrow(all_segs), "segments\n")
-  cat("Samples completed:", length(seg_files), "of", nrow(metadata), "\n")
+  cat("Samples completed:", length(seg_files) - length(failed), "of", nrow(metadata), "\n")
 } else {
   cat("WARNING: No seg files found\n")
 }
