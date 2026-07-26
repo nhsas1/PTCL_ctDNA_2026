@@ -50,6 +50,21 @@ ichorcna_tf <- data.frame(
   stringsAsFactors = FALSE
 )
 
+# Convert a RASCAL (cellularity, ploidy) fit into the tumour fraction ichorCNA reports.
+#
+# These are different quantities and must not be compared directly. Cellularity is the
+# proportion of CELLS that are tumour; ichorCNA's tumour fraction is the proportion of DNA
+# derived from tumour. A tumour cell at ploidy p contributes p genome-equivalents of DNA
+# while a normal cell contributes 2, so
+#
+#   tumour fraction = (cellularity * ploidy) / (cellularity * ploidy + (1 - cellularity) * 2)
+#
+# The two coincide only when ploidy is exactly 2. This is the same conversion used in
+# run_rascal_constrained_batch3.R.
+calc_tf <- function(cellularity, ploidy) {
+  (cellularity * ploidy) / (cellularity * ploidy + (1 - cellularity) * 2)
+}
+
 # Sample list — all 13 Batch 3
 all_samples <- c(
   "B3_S01","B3_S02","B3_S03","B3_S04","B3_S05",
@@ -176,9 +191,12 @@ for (SAMPLE_ID in all_samples) {
     cat("    Solutions:", n_solutions,
         "| Ambiguous:", n_solutions > 1, "\n")
 
+    rascal_expected_tf <- calc_tf(best_cellularity, best_ploidy)
+
     if (!is.na(ICHORCNA_TF)) {
-      cat(sprintf("    TF diff vs ichorCNA: %.3f\n",
-                  abs(best_cellularity - ICHORCNA_TF)))
+      cat(sprintf("    Implied TF: %.3f | TF diff vs ichorCNA: %.3f\n",
+                  rascal_expected_tf,
+                  abs(rascal_expected_tf - ICHORCNA_TF)))
     }
 
     cat("  Step 6: Saving heatmap...\n")
@@ -328,7 +346,11 @@ for (SAMPLE_ID in all_samples) {
       segments_used      = n_after,
       output_segments    = nrow(output_segs),
       ichorcna_tf        = ICHORCNA_TF,
-      tf_difference      = round(abs(best_cellularity - ICHORCNA_TF), 3),
+      # Compare like with like: the tumour fraction implied by the RASCAL fit, not its
+      # cellularity. Previously this subtracted cellularity from ichorCNA tumour fraction
+      # directly, which is only valid at ploidy 2.
+      rascal_expected_tf = round(rascal_expected_tf, 3),
+      tf_difference      = round(abs(rascal_expected_tf - ICHORCNA_TF), 3),
       status             = "SUCCESS"
     )
 
@@ -344,6 +366,7 @@ for (SAMPLE_ID in all_samples) {
       segments_used      = NA,
       output_segments    = NA,
       ichorcna_tf        = ICHORCNA_TF,
+      rascal_expected_tf = NA,
       tf_difference      = NA,
       status             = paste("FAILED:", conditionMessage(e))
     )
