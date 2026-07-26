@@ -10,6 +10,58 @@ provably does not change these values.
 
 ---
 
+# RE-RUN COMPLETED 2026-07-26 — outcome
+
+All eight jobs completed on ALICE and the outputs were synced into `results/`. The fixes
+landed: `RASCAL_batch3_summary.csv` now carries `rascal_expected_tf` and `fallback_used`,
+and `tf_correlation_results.csv` carries `p_adjusted`.
+
+## The per-bin analysis changed, and the change undermines its own result
+
+The z-score correction altered every one of the 534 bins. Comparing before and after:
+
+| | before (stale z) | after (corrected z) |
+|---|---|---|
+| chr4:5–10Mb | p_adj = **0.0280** | p_adj = **0.0499** |
+| chr19:15–20Mb | not significant | **p_adj = 0.0499** |
+| chr19 in top 20 | 3 of 20 | **4 of 20** |
+
+Two things follow, and together they are the most important result of the re-run.
+
+**1. chr4 is significant only because chr19 is.** Benjamini-Hochberg enforces monotonicity by
+taking a running minimum from the largest rank down. The raw values give
+`534 × 1.084e-04 = 0.0579` for chr4 and `267 × 1.867e-04 = 0.0499` for chr19, so chr4's
+adjusted value is pulled down to chr19's. **Remove chr19 and chr4 alone gives p_adj = 0.0579,
+which does not clear 0.05.** The two results stand or fall together.
+
+**2. The chr19 enrichment got stronger, not weaker.** chr19 holds 10 of 534 bins (1.9%) but
+now 4 of the top 20 (20%) — a hypergeometric p of **0.00026**, down from 0.0046 before the
+fix. chr19 is the most GC-rich chromosome in the genome, and this pipeline GC-corrects the
+short:long *ratio* rather than the short and long counts separately as Cristiano et al. do.
+
+The z-score bug was therefore not the source of the chr19 pattern; correcting it made the
+pattern clearer. That points at the GC correction as the remaining explanation.
+
+**Consequence for the write-up:** the GC correction is no longer a methodological footnote.
+If chr19:15Mb is a residual-GC artefact, then chr4 falls with it and **Step 5e has no
+significant findings at all**. Both surviving results sit at p_adj = 0.0499 against a 0.05
+threshold, which is not a robust place to rest a claim either way.
+
+The test that settles it: re-run step 5 GC-correcting `short_count` and `long_count`
+separately, then form the ratio, and see whether the chr19 bins persist. That is a change to
+`process_sample` in `step5_genomewide_profile.R` and a re-run of the 5 → 5d → 5e → 5f chain.
+
+## Also confirmed by the re-run
+
+`fig_batch3_longfragfraction_dedup_sensitivity.png` was **not** regenerated while its two
+sibling figures were, confirming that no script in the repository produces it. It remains a
+committed figure with no source — and it visualises the metric that the `-f 2` finding below
+shows was never measuring what it claimed.
+
+---
+
+---
+
 ## ichorCNA
 
 ### `calculate_FGA_AS.R` — arm direction at the 25% threshold
