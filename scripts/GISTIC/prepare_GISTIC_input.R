@@ -77,6 +77,18 @@ for (s in corrected_samples) {
 
 cat(sprintf("\nSeg files matched: %d\n", length(all_seg_files)))
 
+# Fail loudly if any expected sample has no seg file. Without this the cohort silently
+# shrinks: a missing seg file simply fails to match, the sample drops out of sample_names,
+# and GISTIC runs on fewer samples than intended with nothing but the count above to show
+# it. Since GISTIC's q-values depend on the number of samples, that would quietly change
+# every significance call rather than producing an obvious error.
+missing_segs <- setdiff(detectable, sample_names)
+if (length(missing_segs) > 0) {
+  stop("No seg file found for ", length(missing_segs), " expected sample(s): ",
+       paste(sort(missing_segs), collapse = ", "),
+       "\nGISTIC would otherwise run on a silently reduced cohort.")
+}
+
 read_and_convert <- function(filepath, sample_id) {
   df <- read_tsv(filepath, col_types = cols(.default = "c"), show_col_types = FALSE)
   df <- df %>%
