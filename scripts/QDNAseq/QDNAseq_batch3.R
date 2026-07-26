@@ -1,21 +1,39 @@
 #!/usr/bin/env Rscript
-# ============================================================
-# PTCL ctDNA — QDNAseq CNV Pipeline — Batch 3
+
+# PTCL ctDNA — QDNAseq CNV pipeline — Batch 3 (n = 13)
 # Author: Noor Shaban
 # Date: June 2026
 # Based on: QDNAseq_ALICE_automated.R (Batches 1 and 2)
-# Changes from original:
-#   - METADATA points to sample_metadata_batch3.csv (13 samples only)
-#   - OUTPUT_DIR points to QDNAseq_output_batch3 (separate from B1/B2)
-#   - Duplicate handling note: Batch 3 BAMs have no MarkDuplicates in
-#     pipeline — no duplicate flags present. QDNAseq duplicate filter
-#     has no reads to exclude. Documented but not corrected.
-# All other parameters identical to original pipeline.
-# ============================================================
+#
+# All processing parameters are identical to the Batch 1-2 pipeline, so see that
+# script for the rationale behind the filter settings, the GC correction, the sqrt
+# transform at segmentation, and the implicit chrX/chrY exclusion. Batch 3 is run
+# separately only because it has its own metadata file and output directory, and
+# because its BAMs differ in duplicate status (see below).
+#
+# Differences from QDNAseq_ALICE_automated.R:
+#   - OUTPUT_DIR points to QDNAseq_output_batch3, kept separate from B1/B2
+#   - METADATA points to sample_metadata_batch3.csv (13 samples)
+#   - the startup banner below carries the duplicate-status note
+#   - the master seg file is named ALL_SAMPLES_batch3_combined.seg
+# BINS_FILE is identical to the Batch 1-2 pipeline, so the same 15kb hg38 bin set
+# is used throughout the cohort.
+#
+# Duplicate status: Batch 3 BAMs were not run through MarkDuplicates at source, so
+# no reads carry the 1024 flag and QDNAseq's duplicate filter has nothing to
+# exclude. Batches 1 and 2 were deduplicated at source. Batch 3 therefore retains
+# its PCR and optical duplicates in the bin counts, which inflates apparent
+# coverage and can slightly damp the measured amplitude of real copy-number
+# changes.
+#
+# NOTE for write-up: a deduplicated Batch 3 BAM set does exist. It is produced by
+# scripts/fragmentomics/run_batch3_markdup.slurm and the fragmentomics arm uses
+# it. This CNA arm reads the original non-deduplicated BAMs instead, so the two
+# arms of the thesis process Batch 3 differently. The limitation is real but it
+# was avoidable, and it should be described as a choice rather than a constraint.
 
 .libPaths(c("/home/n/nhsas1/R/library", .libPaths()))
 
-# ── Configuration — only these 3 lines differ from original ─
 BINS_FILE  <- "/scratch/alice/n/nhsas1/PTCL/scripts/hg38_bins_15kb_annotated.rds"
 OUTPUT_DIR <- "/scratch/alice/n/nhsas1/PTCL/QDNAseq_output_batch3"
 METADATA   <- "/scratch/alice/n/nhsas1/PTCL/scripts/sample_metadata_batch3.csv"
@@ -25,7 +43,7 @@ suppressPackageStartupMessages({
   library(Biobase)
 })
 
-# ── Required: silent graphics device for SLURM nodes ────────
+# Silent graphics device, required on headless SLURM nodes.
 pdf(NULL)
 
 cat("=== QDNAseq Pipeline — Batch 3 ===\n")
@@ -61,6 +79,10 @@ for (i in seq_len(nrow(metadata))) {
   sample_dir <- file.path(OUTPUT_DIR, sample_id)
   if (!dir.exists(sample_dir)) dir.create(sample_dir, recursive=TRUE)
 
+  # Processing steps below are identical to the Batch 1-2 pipeline. The one
+  # batch-specific consequence is at step 1: with no duplicate flags present, the
+  # bin counts here include PCR and optical duplicates, whereas the Batch 1-2
+  # counts do not.
   tryCatch({
 
     cat("  [1/6] Counting reads...\n")
