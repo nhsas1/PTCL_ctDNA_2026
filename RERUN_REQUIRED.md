@@ -111,6 +111,88 @@ effect rather than by design.
 
 ---
 
+## Fragmentomics
+
+### `step5d_final_profile_plot.R` — z-scores computed before centromere exclusion
+
+Fixed in `fix(fragmentomics): Recompute z-scores after centromere exclusion`.
+
+**This is the most consequential fix in the review.** `z_ratio` was computed in step 5 with
+a mean and standard deviation taken over all bins, including the centromeric outliers that
+step 5d then removed. Excluding an outlier after it has inflated the scale applied to every
+other bin leaves the retained z-scores compressed — by a different amount in each sample,
+since exclusion is per chromosome but scaling is per sample.
+
+| File | Status |
+|---|---|
+| `genomewide_fragmentation_profile_final.csv` (ALICE) | **stale** — `z_ratio` |
+| `results/fragmentomics/tables/genomewide_perbin_significance.csv` | **stale** — every p-value |
+| `results/fragmentomics/tables/genomewide_perbin_significance_telomere_checked.csv` | **stale** — every p-value |
+| `results/fragmentomics/figures/genomewide_profile/*_final*.png` | **stale** |
+
+Re-run order: **step 5 → 5d → 5e → 5f.** Step 5e compares samples within a bin, so
+differently-scaled values were being compared directly and rank order could change; the
+single BH-significant bin (chr4:5–10Mb, adjusted p = 0.028) may not survive.
+
+Residual: the LOESS GC fit in step 5 still includes centromeric bins. Fully correcting this
+means moving the exclusion upstream into `process_sample`.
+
+### Multiple-testing corrections
+
+| Fix | File | Status |
+|---|---|---|
+| `fix(fragmentomics): Correct the Kruskal-Wallis omnibus p-values` | `group_comparison_test_results.csv` | **stale** — omnibus rows only |
+| `fix(fragmentomics): Correct the tumour fraction correlation p-values` | `tf_correlation_results.csv` | **stale** — gains `p_adjusted` |
+
+**The step 3 correction changes what the sensitivity analysis supports.** In `All_samples`
+the three significant metrics survive (adjusted 0.037, 0.037, 0.038). Excluding B2_S11 they
+do not — all three land at 0.055, just above threshold. The primary result holds after
+correction; the sensitivity check no longer reaches significance. This needs stating
+explicitly rather than glossing.
+
+Step 4 changes no conclusion: all three significant correlations survive at adjusted
+0.004–0.010.
+
+### `generate_publication_figures.R` — agreement statistics
+
+Fixed in `fix(fragmentomics): Use agreement statistics on sensitivity figures`.
+
+| File | Status |
+|---|---|
+| `figures/dedup_sensitivity/fig_batch3_median_dedup_sensitivity.png` | **stale** — annotation |
+| `figures/dedup_sensitivity/fig_batch3_shorttolong_dedup_sensitivity.png` | **stale** — annotation |
+
+Underlying data unchanged. `delta_sl_ratio` is positive in **13 of 13** samples (sign test
+p = 0.0002, mean bias +0.0099) while Pearson *r* reads 0.9998 — the correlation is blind to
+a perfectly systematic shift, which is the exact failure these figures exist to exclude.
+
+### Not fixed — flagged for decision
+
+**GC correction is applied to the ratio, not the counts.** DELFI corrects short and long
+counts separately then forms the ratio; this corrects the ratio directly. Not equivalent,
+since GC bias acts multiplicatively on each count. Missing from the script's own deviations
+list.
+
+Evidence it matters: **chr19 holds 10 of 534 bins (1.9%) but 3 of the top 20 most
+significant (15%)** — hypergeometric p = 0.005 — and its bins rank systematically more
+significant (Wilcoxon p = 0.03). chr19 is the most GC-rich chromosome. But the broader
+GC-rich set (chr19, 17, 22, 16) shows no enrichment (p = 0.37), so this is *not* a simple
+monotone GC effect and the explanation is unsettled. Correcting the counts separately may
+remove the signal entirely — worth checking before interpreting any per-bin result.
+
+**`step5f_telomere_check.R` does not test what it claims.** hg38 telomere gap records are
+10kb, so a 5Mb bin "overlapping" one is 0.2% telomeric — and those regions are N-masked,
+contributing no reads. The flag identifies "first or last bin of a chromosome", confirmed
+by the output: 39 of 534 bins = 17 p-arm + 22 q-arm terminal. No telomeric-artefact
+conclusion is supportable. Rescoping to a real subtelomeric window (terminal 2–5Mb) or
+dropping the step is a decision, not a fix.
+
+**Step 5 header contradicts step 5e.** The header states no per-bin testing is performed
+because the cohort could not support the correction; step 5e performs exactly that testing.
+Do not carry that claim into the Methods.
+
+---
+
 ## QDNAseq
 
 No committed results are affected. The Stage 1 fixes touched failure-path reporting, the
