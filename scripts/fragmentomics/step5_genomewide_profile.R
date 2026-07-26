@@ -17,6 +17,12 @@
 # - Descriptive/exploratory analysis only; no per-bin statistical testing
 #   (587 bins x 3 groups would require heavy multiple-testing correction
 #   not supported by this cohort size).
+#   SUPERSEDED: step5e_perbin_significance.R now performs exactly this
+#   testing, with BH correction across the 534 retained bins, and finds
+#   one significant bin (chr4:5-10Mb, adjusted p = 0.028). This bullet
+#   was the reasoning before that step existed. If this header is the
+#   source for the Methods, do not carry this claim across - it
+#   contradicts a script in the same directory.
 
 suppressMessages(library(ggplot2))
 suppressMessages(library(dplyr))
@@ -48,6 +54,24 @@ process_sample <- function(sample) {
     b <- b[b$total_count >= MIN_BIN_FRAGMENTS & b$long_count > 0, ]
     if (nrow(b) < 50) return(NULL)
 
+    # UNDOCUMENTED DEVIATION from Cristiano et al. 2019 - add this to the deviations list
+    # at the top of the file before writing up.
+    #
+    # DELFI GC-corrects the short and long counts SEPARATELY, then forms the ratio. Here the
+    # ratio is formed first and the correction applied to it. These are not equivalent: GC
+    # bias acts multiplicatively on each count, so the bias in a ratio of two GC-biased
+    # counts is not the additive residual that the LOESS below removes.
+    #
+    # There is evidence the correction is leaving structure behind. In the step5e output,
+    # chr19 holds 10 of 534 bins (1.9%) but 3 of the top 20 most significant (15%),
+    # hypergeometric p = 0.005, and chr19 bins rank systematically more significant than the
+    # rest (Wilcoxon p = 0.03). chr19 is the most GC-rich chromosome in the genome. Note
+    # though that the broader GC-rich set (chr19, 17, 22, 16) shows no such enrichment
+    # (p = 0.37), so this is not a simple monotone GC effect and the explanation is not
+    # settled - it is specifically chr19 that stands out.
+    #
+    # Worth resolving before interpreting any per-bin result, because correcting the counts
+    # separately may remove the chr19 signal entirely.
     b$raw_ratio <- b$short_count / b$long_count
 
     loess_fit <- tryCatch(
@@ -56,6 +80,13 @@ process_sample <- function(sample) {
     )
     if (is.null(loess_fit)) return(NULL)
 
+    # The LOESS is fitted per sample, which is correct - GC bias is a property of an
+    # individual library's amplification, so pooling samples would smear together curves of
+    # different shape.
+    #
+    # The + mean() term only re-centres the corrected values; it cancels exactly in the
+    # z-score on the next line. corrected_ratio's absolute level is therefore arbitrary and
+    # should not be interpreted or compared across samples - only z_ratio is meaningful.
     b$fitted <- predict(loess_fit)
     b$corrected_ratio <- b$raw_ratio - b$fitted + mean(b$raw_ratio, na.rm = TRUE)
     b$z_ratio <- (b$corrected_ratio - mean(b$corrected_ratio, na.rm = TRUE)) / sd(b$corrected_ratio, na.rm = TRUE)
