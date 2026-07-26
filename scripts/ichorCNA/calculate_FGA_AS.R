@@ -247,8 +247,11 @@ for (s in unique(all_segs$sample)) {
 
     # 25% threshold, the sensitive variant. Unlike the 50% case, both fractions can exceed
     # 0.25 on the same arm, so the direction must be decided by which is larger rather than
-    # by branch order.
-    if (frac_gain > 0.25) {
+    # by branch order. Previously this was an if/else-if chain testing gain first, which
+    # returned GAIN whenever both fractions cleared the threshold - including arms that
+    # were overwhelmingly deleted. Ties are broken towards loss, which is the conservative
+    # choice for lymphoma where arm-level deletions predominate.
+    if (frac_gain > 0.25 && frac_gain > frac_loss) {
       status_25 <- "GAIN"
     } else if (frac_loss > 0.25) {
       status_25 <- "LOSS"
