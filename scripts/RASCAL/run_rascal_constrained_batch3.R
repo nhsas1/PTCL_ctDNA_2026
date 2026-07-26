@@ -1,16 +1,31 @@
-# ============================================================
 # RASCAL Constrained Run — Batch 3 (3 Samples)
 # PTCL ctDNA Thesis | RASCAL v0.7.0 | R 4.3.1 | ALICE HPC
 # Samples: B3_S06, B3_S08, B3_S09
-# Reason: Unconstrained run returned boundary artefacts
-#         (ploidy=1.5 boundary hit) or high TF discordance
-# Cellularity search restricted to ichorCNA TF ± 0.15
+# Cellularity search restricted using ichorCNA TF ± 0.15
 # Based on: run_rascal_constrained.R (Batches 1 and 2)
 # Changes from original:
 #   - QDNASEQ_DIR points to QDNAseq_output_batch3
 #   - OUTPUT_DIR points to RASCAL/output_batch3_constrained
 #   - sample_table updated with 3 Batch 3 samples only
-# ============================================================
+#
+# WHY THESE THREE SAMPLES: the operative criterion is tumour fraction above 0.1, which
+# selects exactly B3_S06 (0.603), B3_S08 (0.623) and B3_S09 (0.361). These are the only
+# Batch 3 samples with enough tumour content for a constrained fit to be meaningful.
+#
+# The header previously gave the criterion as "ploidy=1.5 boundary hit or high TF
+# discordance", which does not describe this selection. Five samples hit the ploidy floor
+# (B3_S06, B3_S07, B3_S08, B3_S10, B3_S12) and all thirteen were labelled discordant, so
+# that criterion would have selected five or thirteen samples rather than three. B3_S09 is
+# included here despite fitting at ploidy 2.05, well off the floor.
+#
+# The practical consequence: B3_S07, B3_S10 and B3_S12 hit the ploidy floor and were never
+# re-run. That is defensible, since all three are below the detection floor and a
+# constrained fit would be no more meaningful than an unconstrained one, but it should be
+# stated as the reason rather than left implied.
+#
+# NOTE the ploidy search is NOT constrained here - only cellularity is. The unconstrained
+# run's ploidy boundary artefact is therefore not directly addressed by this script; the
+# fitted ploidies move off the floor as a side effect of restricting cellularity.
 
 .libPaths(c("/home/n/nhsas1/R/library", .libPaths()))
 
@@ -18,12 +33,12 @@ library(rascal)
 library(dplyr)
 library(ggplot2)
 
-# ── Paths ────────────────────────────────────────────────────
+# Paths
 QDNASEQ_DIR <- "/scratch/alice/n/nhsas1/PTCL/QDNAseq_output_batch3"
 OUTPUT_DIR  <- "/scratch/alice/n/nhsas1/PTCL/RASCAL/output_batch3_constrained"
 dir.create(OUTPUT_DIR, recursive = TRUE, showWarnings = FALSE)
 
-# ── Sample table — 3 Batch 3 samples ────────────────────────
+# Sample table — 3 Batch 3 samples
 # ichorCNA values from verified params files
 # Unconstrained RASCAL values from Run 1 summary CSV
 sample_table <- data.frame(
@@ -36,7 +51,7 @@ sample_table <- data.frame(
   stringsAsFactors = FALSE
 )
 
-# ── Constraint width ─────────────────────────────────────────
+# Constraint width
 CONSTRAINT <- 0.15   # search TF ± 0.15
 
 cat("═══════════════════════════════════════════════════════\n")
@@ -45,18 +60,34 @@ cat("Cellularity window: ichorCNA TF ±", CONSTRAINT, "\n")
 cat("Output:", OUTPUT_DIR, "\n")
 cat("═══════════════════════════════════════════════════════\n\n")
 
-# ── Summary collector ────────────────────────────────────────
+# Summary collector
 summary_rows <- list()
 
-# ════════════════════════════════════════════════════════════
 # MAIN LOOP
-# ════════════════════════════════════════════════════════════
 for (i in 1:nrow(sample_table)) {
 
   SAMPLE_ID    <- sample_table$sample[i]
   ICHORCNA_TF  <- sample_table$ichorcna_tf[i]
   ICHORCNA_PLY <- sample_table$ichorcna_ply[i]
 
+  # KNOWN LIMITATION - the window is built on the wrong variable.
+  #
+  # The +/-0.15 band is derived from ichorCNA's TUMOUR FRACTION but applied as bounds on
+  # RASCAL's CELLULARITY. Those quantities differ whenever ploidy is not 2, by exactly the
+  # conversion calc_tf defines further down this script. Constraining cellularity to
+  # [TF-0.15, TF+0.15] therefore does not constrain the implied tumour fraction to that
+  # band.
+  #
+  # The effect is visible in the committed output. B3_S09 searched cellularity in
+  # [0.21, 0.51], settled at cellularity 0.451 with ploidy 3.10, and produced an implied
+  # tumour fraction of 0.560 against ichorCNA's 0.361 - a difference of 0.199, from a
+  # constraint labelled +/-0.15. B3_S06 and B3_S08 are unaffected in practice because they
+  # fit near ploidy 2, where the two quantities nearly coincide.
+  #
+  # Doing this properly means back-solving the cellularity bounds through calc_tf at each
+  # candidate ploidy, which changes the searched space and so changes the fits. Left
+  # unchanged here because that is a new analysis rather than a correction; see
+  # RERUN_REQUIRED.md.
   cell_min <- max(0.05, ICHORCNA_TF - CONSTRAINT)
   cell_max <- min(1.00, ICHORCNA_TF + CONSTRAINT)
 
@@ -362,9 +393,7 @@ for (i in 1:nrow(sample_table)) {
   cat("  Completed:", SAMPLE_ID, "\n\n")
 }
 
-# ════════════════════════════════════════════════════════════
 # MASTER COMPARISON TABLE
-# ════════════════════════════════════════════════════════════
 cat("═══════════════════════════════════════════════════════\n")
 cat("Building comparison table...\n")
 
