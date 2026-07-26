@@ -91,6 +91,27 @@ for (metric in metric_cols) {
     }
 }
 
+# Apply BH to the Kruskal-Wallis omnibus tests.
+#
+# Previously these were written with p_adjusted = NA while the header and Methods described
+# the analysis as BH-corrected. Only the pairwise family was corrected; the four omnibus
+# tests were reported raw.
+#
+# The family is the four metrics within one dataset. All_samples and Excluding_B2_S11 are
+# deliberately corrected separately, matching how the pairwise tests are handled: the
+# sensitivity analysis re-examines the same hypotheses on the same data rather than adding
+# new ones, so pooling them would penalise the primary analysis for being checked.
+#
+# NOTE the correction changes what the sensitivity analysis supports. In All_samples the
+# three significant metrics survive (adjusted 0.037, 0.037, 0.038); excluding B2_S11 they
+# do not (all 0.055). See the comment below the write.
+for (ds in unique(test_results$dataset)) {
+    idx <- which(test_results$dataset == ds & test_results$test == "Kruskal-Wallis")
+    if (length(idx) > 0) {
+        test_results$p_adjusted[idx] <- p.adjust(test_results$p_value[idx], method = "BH")
+    }
+}
+
 write.csv(test_results, file.path(out_dir, "group_comparison_test_results.csv"), row.names = FALSE)
 write.csv(summary_stats, file.path(out_dir, "group_comparison_summary_stats.csv"), row.names = FALSE)
 cat("Test results written:", nrow(test_results), "rows\n")
