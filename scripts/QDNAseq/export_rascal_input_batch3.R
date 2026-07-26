@@ -1,9 +1,22 @@
+# Export bin-level relative copy number for Batch 3 as plain TSV.
+#
+# NAMING WARNING: despite the filename, the output directory and the job name, RASCAL does
+# not read these files. Both RASCAL scripts read the QDNAseq .seg and .igv files directly
+# and re-linearise them with 2^log2_ratio. The only consumers of *_rascal_input.txt in this
+# repository are the two plot_qdnaseq_ichorcna_concordance scripts, so what this script
+# actually produces is the QDNAseq side of the QDNAseq-vs-ichorCNA concordance analysis.
+# The names are being kept for now because renaming them touches paths in several scripts.
+#
+# This is a third independent full pass over every Batch 3 BAM, after the main pipeline and
+# the plot script. It stops after smoothing and does not segment, because the concordance
+# comparison is made at bin level.
+
 .libPaths(c("/home/n/nhsas1/R/library", .libPaths()))
 library(QDNAseq)
 library(Biobase)
 pdf(NULL)
 
-# ── Only these 3 lines differ from original export_rascal_input.R ─
+# Only OUTPUT_DIR and METADATA differ from export_rascal_input.R; BINS_FILE is identical.
 BINS_FILE  <- "/scratch/alice/n/nhsas1/PTCL/scripts/hg38_bins_15kb_annotated.rds"
 OUTPUT_DIR <- "/scratch/alice/n/nhsas1/PTCL/RASCAL/input_batch3"
 METADATA   <- "/scratch/alice/n/nhsas1/PTCL/scripts/sample_metadata_batch3.csv"
@@ -27,8 +40,9 @@ for (i in seq_len(nrow(metadata))) {
     copyNumbers           <- correctBins(readCountsFiltered)
     copyNumbersNormalized <- normalizeBins(copyNumbers)
     copyNumbersSmooth     <- smoothOutlierBins(copyNumbersNormalized)
-    # Export in non-log2 format for RASCAL
-    # diploid = 1.0 (not 0 like seg files)
+    # Export linear relative copy number rather than log2, so a diploid bin sits at 1.0
+    # instead of 0. The concordance script compares these values against ichorCNA's
+    # copy-number estimates, which are also on a linear scale.
     exportBins(copyNumbersSmooth,
                file=file.path(OUTPUT_DIR, paste0(sample_id, "_rascal_input.txt")),
                format="tsv",
