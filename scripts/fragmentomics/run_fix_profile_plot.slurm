@@ -1,7 +1,7 @@
 #!/bin/bash
-# Step 5c: redraws the step 5 figure with chromosomes in numeric rather than lexicographic
-# order. WARNING: writes the same filenames as step 5, so re-running step 5 afterwards
-# silently restores the incorrectly ordered figure.
+# Step 5c: diagnostic report on the most extreme bins, the evidence behind the centromere
+# exclusion in step 5d. Produces no figures - the chromosome ordering and palette fixes it
+# used to apply now live in step 5 itself, so there is no longer a filename collision.
 #SBATCH --job-name=frag_fixplot
 #SBATCH --partition=short
 #SBATCH --cpus-per-task=1

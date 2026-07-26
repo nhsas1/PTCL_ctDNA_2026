@@ -1,16 +1,20 @@
-# Step 5c: diagnose extreme bins + fix chromosome ordering + fix color palette
+# Step 5c: diagnostic report on the most extreme bins.
 # Reads the already-computed profile (no re-fitting needed).
 #
-# Fixes applied:
-# 1. Chromosome order: gc_bins$chr was sorted lexicographically ("chr1","chr10",
-#    "chr11"...) instead of numerically. Now explicitly factor-leveled chr1-chr22.
-# 2. Below_floor color darkened for legibility (#A0B6C0 -> #6B8494).
-# 3. B2_S11 highlight changed from black (visually collides with High_TF's
-#    dark navy) to a distinct orange (#D95F02), unambiguous against every
-#    other color in the palette.
-# 4. Diagnostic report on the most extreme bins (mean total_count, GC%, raw
-#    ratio) printed before plotting, to assess whether they are mappability/
-#    reference artifacts vs. genuine signal, before any decision to exclude.
+# Reports mean total_count, GC fraction and raw ratio for the bins with the most
+# extreme z-scores, so they can be assessed as mappability or reference artefacts
+# versus genuine signal before any decision to exclude them. This is the evidence
+# behind the centromere exclusion applied in step 5d.
+#
+# NO LONGER PLOTS. This script previously also re-drew the step 5 figure to correct
+# three problems, writing the same output filenames as step 5 - which meant re-running
+# step 5 afterwards silently restored the uncorrected version. All three fixes now live
+# in step5_genomewide_profile.R itself, so that script's output is correct on its own:
+#   1. Chromosome ordering, which was lexicographic (chr1, chr10, chr11 ... chr2)
+#      because the bin index was built from an unfactored character column.
+#   2. Below_floor colour darkened for legibility (#A0B6C0 -> #6B8494).
+#   3. B2_S11 highlight changed from black, which collided with High_TF's dark navy,
+#      to orange (#D95F02).
 
 suppressMessages(library(ggplot2))
 suppressMessages(library(dplyr))
@@ -48,56 +52,4 @@ cat("Median GC fraction across all bins:", round(median(profile$gc_fraction, na.
 cat("GC fraction range across all bins: [", round(min(profile$gc_fraction, na.rm = TRUE), 3), ",",
     round(max(profile$gc_fraction, na.rm = TRUE), 3), "]\n")
 
-bin_order <- profile %>%
-    distinct(chr, bin_start) %>%
-    arrange(chr, bin_start) %>%
-    mutate(bin_index = row_number())
-
-profile <- merge(profile, bin_order, by = c("chr", "bin_start"))
-profile <- profile[order(profile$bin_index), ]
-
-chr_labels <- profile %>%
-    group_by(chr) %>%
-    summarise(mid_index = mean(bin_index), .groups = "drop")
-
-group_summary <- profile %>%
-    group_by(bin_index, chr, group) %>%
-    summarise(mean_z = mean(z_ratio, na.rm = TRUE),
-              se_z = sd(z_ratio, na.rm = TRUE) / sqrt(n()),
-              .groups = "drop")
-
-group_colors <- c("Below_floor" = "#6B8494", "Low_TF" = "#0063A3", "High_TF" = "#2E4057")
-
-fig <- ggplot(group_summary, aes(x = bin_index, y = mean_z, color = group, fill = group)) +
-    geom_ribbon(aes(ymin = mean_z - se_z, ymax = mean_z + se_z), alpha = 0.15, color = NA) +
-    geom_line(linewidth = 0.7) +
-    geom_vline(data = chr_labels[seq(1, 22, 2), ], aes(xintercept = mid_index),
-               linetype = "dotted", color = "grey85", linewidth = 0.3) +
-    scale_x_continuous(breaks = chr_labels$mid_index, labels = gsub("chr", "", chr_labels$chr)) +
-    scale_color_manual(values = group_colors, name = "TF group") +
-    scale_fill_manual(values = group_colors, name = "TF group") +
-    labs(
-        title = "Genome-wide fragmentation profile (DELFI-style, GC-corrected)",
-        subtitle = "Short:long ratio (z-scored within sample) across 5Mb bins, chr1-22; mean +/- SE by TF group",
-        x = "Chromosome", y = "Mean z-scored short:long ratio"
-    ) +
-    theme_classic(base_size = 12) +
-    theme(axis.text.x = element_text(size = 8),
-          plot.title = element_text(size = 13, face = "bold"),
-          plot.subtitle = element_text(size = 9, color = "grey30"))
-
-ggsave(file.path(out_dir, "fig_genomewide_fragmentation_profile.pdf"), fig, width = 14, height = 6, dpi = 300)
-ggsave(file.path(out_dir, "fig_genomewide_fragmentation_profile.png"), fig, width = 14, height = 6, dpi = 300)
-
-b2s11_data <- profile[profile$sample == "B2_S11", ]
-if (nrow(b2s11_data) > 0) {
-    fig_flagged <- fig +
-        geom_line(data = b2s11_data, aes(x = bin_index, y = z_ratio),
-                  inherit.aes = FALSE, color = "#D95F02", linewidth = 0.6, alpha = 0.9) +
-        labs(subtitle = "Short:long ratio (z-scored within sample), chr1-22; mean +/- SE by TF group; B2_S11 shown in orange (flagged, pending final decision)")
-
-    ggsave(file.path(out_dir, "fig_genomewide_fragmentation_profile_B2S11flagged.pdf"), fig_flagged, width = 14, height = 6, dpi = 300)
-    ggsave(file.path(out_dir, "fig_genomewide_fragmentation_profile_B2S11flagged.png"), fig_flagged, width = 14, height = 6, dpi = 300)
-}
-
-cat("\nDone. Corrected figures written to:", out_dir, "\n")
+cat("\nDiagnostic report complete. Figures are produced by step 5 and step 5d.\n")
