@@ -1,4 +1,3 @@
-# ============================================================
 # RASCAL Batch Analysis — Batch 3 (13 Samples)
 # PTCL ctDNA Thesis | RASCAL v0.7.0 | R 4.3.1 | ALICE HPC
 # Based on: run_rascal_batch.R (Batches 1 and 2)
@@ -8,7 +7,26 @@
 #   - ichorcna_tf updated with Batch 3 TF values from ichorCNA
 #   - all_samples updated to 13 Batch 3 sample IDs
 # All other parameters identical to original pipeline.
-# ============================================================
+#
+# WHAT THIS IS FOR: RASCAL is an independent estimator of absolute copy number, fitting
+# ploidy and cellularity by searching for the combination that places relative copy numbers
+# closest to integers. It is run here as a cross-check on ichorCNA, not as a source of
+# results - the thesis CNA calls come from ichorCNA. Nothing downstream reads the
+# *_abs_cn.seg files this script writes.
+#
+# INTERPRETING THE OUTPUT - read this before quoting anything from the summary CSV:
+#
+# RASCAL needs enough tumour signal to find integer structure. Eleven of these thirteen
+# samples sit below the 3% ichorCNA detection floor, where no such structure exists, so
+# RASCAL fits whatever minimises distance on noise. That is why the summary reports
+# cellularity of 0.80-0.94 for samples whose ichorCNA tumour fraction is under 2%, and why
+# all thirteen come out DISCORDANT.
+#
+# Those rows are not evidence that the two methods disagree. They are evidence that RASCAL
+# cannot fit a sample with no detectable tumour, which is expected and is the reason the CNA
+# cohort is restricted to detectable samples in the first place. Only B3_S06, B3_S08 and
+# B3_S09 have enough tumour content for the comparison to mean anything, and those three are
+# re-run in run_rascal_constrained_batch3.R.
 
 .libPaths(c("/home/n/nhsas1/R/library", .libPaths()))
 
@@ -16,12 +34,12 @@ library(rascal)
 library(dplyr)
 library(ggplot2)
 
-# ── Global paths ─────────────────────────────────────────────
+# Global paths
 QDNASEQ_DIR <- "/scratch/alice/n/nhsas1/PTCL/QDNAseq_output_batch3"
 OUTPUT_DIR  <- "/scratch/alice/n/nhsas1/PTCL/RASCAL/output_batch3"
 dir.create(OUTPUT_DIR, recursive = TRUE, showWarnings = FALSE)
 
-# ── ichorCNA tumour fraction reference — Batch 3 ─────────────
+# ichorCNA tumour fraction reference — Batch 3
 ichorcna_tf <- data.frame(
   sample = c("B3_S01","B3_S02","B3_S03","B3_S04","B3_S05",
              "B3_S06","B3_S07","B3_S08","B3_S09","B3_S10",
@@ -32,7 +50,7 @@ ichorcna_tf <- data.frame(
   stringsAsFactors = FALSE
 )
 
-# ── Sample list — all 13 Batch 3 ─────────────────────────────
+# Sample list — all 13 Batch 3
 all_samples <- c(
   "B3_S01","B3_S02","B3_S03","B3_S04","B3_S05",
   "B3_S06","B3_S07","B3_S08","B3_S09","B3_S10",
@@ -45,12 +63,10 @@ cat("═════════════════════════
 cat("Samples to process:", length(all_samples), "\n")
 cat("Output directory:", OUTPUT_DIR, "\n\n")
 
-# ── Summary collector ────────────────────────────────────────
+# Summary collector
 summary_rows <- list()
 
-# ════════════════════════════════════════════════════════════
 # MAIN LOOP
-# ════════════════════════════════════════════════════════════
 for (SAMPLE_ID in all_samples) {
 
   cat("───────────────────────────────────────────────────────\n")
@@ -100,6 +116,18 @@ for (SAMPLE_ID in all_samples) {
     cn_vector <- seg_data$relative_cn
     wt_vector <- seg_data$DATAPOINTS
 
+    # Search ploidy-cellularity space for the combination placing relative copy numbers
+    # closest to integers. The distance being minimised is a weighted median absolute
+    # deviation from integer, with segments weighted by their bin count so long segments
+    # count more than short noisy ones.
+    #
+    # CAVEAT on min_ploidy = 1.5: this floor is binding. Five of the thirteen samples
+    # (B3_S06, B3_S07, B3_S08, B3_S10, B3_S12) return a fitted ploidy of exactly 1.50,
+    # meaning the optimum lies at or below the edge of the search space and the true minimum
+    # was never reached. A fit sitting on a grid boundary is not a converged fit and should
+    # not be quoted as a ploidy estimate. RASCAL's own default lower bound is 1.25.
+    #
+    # Widening the floor would change every fit, so it is left as-is; see RERUN_REQUIRED.md.
     cat("  Step 4: Grid search...\n")
     grid <- absolute_copy_number_distance_grid(
       relative_copy_numbers = cn_vector,
@@ -113,6 +141,10 @@ for (SAMPLE_ID in all_samples) {
     )
     cat("    Best MAD in grid:", round(min(grid$distance), 4), "\n")
 
+    # find_best_fit_solutions applies RASCAL's quality filters and can return several
+    # acceptable solutions, or none. More than one means the data genuinely cannot
+    # distinguish between e.g. a near-diploid and a doubled interpretation, which is the
+    # same non-identifiability that excludes B3_S12 from the ichorCNA cohort.
     cat("  Step 5: Finding best solutions...\n")
     best <- find_best_fit_solutions(
       relative_copy_numbers = cn_vector,
@@ -321,9 +353,7 @@ for (SAMPLE_ID in all_samples) {
   cat("  Completed:", SAMPLE_ID, "— Status:", result$status, "\n\n")
 }
 
-# ════════════════════════════════════════════════════════════
 # MASTER SUMMARY
-# ════════════════════════════════════════════════════════════
 cat("═══════════════════════════════════════════════════════\n")
 cat("Building master summary...\n")
 
