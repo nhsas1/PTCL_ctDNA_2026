@@ -1,7 +1,13 @@
 #!/usr/bin/env Rscript
-# GenVisR cnFreq and cnSpec — Cohort-Level CNA Visualisation
-# 20 detectable PTCL ctDNA samples (TF >= 3%, post-correction)
-# Uses Corrected_Copy_Number from ichorCNA seg.txt files
+
+# GenVisR cnFreq and cnSpec - cohort-level CNA visualisation for the curated n=20 cohort.
+#
+# Two complementary views. cnFreq collapses the cohort into the proportion of samples
+# gained or lost at each locus, which is how recurrent regions become visible; cnSpec keeps
+# every sample as its own row, so an individual profile can be inspected and a single
+# outlier driving a frequency peak can be spotted. Neither is a substitute for the other.
+#
+# Uses Corrected_Copy_Number from the ichorCNA seg files, preferring the curated versions.
 
 library(GenVisR)
 library(ggplot2)
@@ -53,6 +59,11 @@ all_segs <- do.call(rbind, lapply(samples, function(s) {
 }))
 
 # Format for GenVisR: chromosome, start, end, segmean, sample
+#
+# NOTE the column name is misleading and matters for interpretation. GenVisR calls this
+# field "segmean", which conventionally holds a log2 segment mean, but what is placed in it
+# here is absolute integer copy number. That is why cnSpec below is called with
+# CNscale = "absolute" and why the cnFreq cutoffs are set around 2 rather than around 0.
 cnData <- data.frame(
   chromosome = paste0("chr", all_segs$chrom),
   start      = all_segs$start,
@@ -68,7 +79,15 @@ cnData <- cnData[cnData$chromosome %in% paste0("chr", 1:22), ]
 cat(sprintf("Loaded %d segments across %d samples\n\n",
             nrow(cnData), length(unique(cnData$sample))))
 
-# Sample ordering by tumour fraction (high to low)
+# Sample ordering by tumour fraction, highest at the top of the cnSpec heatmap. Ordering
+# this way rather than alphabetically lets a reader check visually whether apparent
+# alteration burden tracks tumour fraction, which would indicate the profiles are being
+# driven by detection sensitivity rather than biology.
+#
+# This list is hardcoded rather than derived from the ichorCNA summary, so it will silently
+# go stale if the cohort or any tumour fraction changes. Verified correct at time of
+# review: 20 unique samples, strictly descending tumour fraction, all present in
+# ichorCNA_summary.csv.
 tf_order <- c(
   "B3_S08", "B3_S06", "B2_S05", "B2_S06", "B2_S04",
   "B3_S09", "B2_S16", "B2_S08", "B2_S15", "B2_S07",
@@ -78,6 +97,8 @@ tf_order <- c(
 
 cnData$sample <- factor(cnData$sample, levels = tf_order)
 
+# Mark curated samples with an asterisk in the heatmap row labels, so a reader can see at a
+# glance which profiles reflect manual intervention rather than the raw ichorCNA solution.
 # Mark curated samples with asterisk for cnSpec labels
 cnData_spec <- cnData
 curated_labels <- setNames(
@@ -105,6 +126,10 @@ freq_layer <- list(
   )
 )
 
+# Cutoffs bracket diploid: with integer absolute copy number, anything below 1.5 is a
+# single-copy loss or worse and anything above 2.5 is a gain, so CN=2 is correctly treated
+# as neutral. plotType="proportion" reports the fraction of the cohort altered at each
+# locus rather than a raw count, which keeps the y-axis interpretable at n=20.
 pdf(file.path(output_dir, "cnFreq_cohort_n20_v2.pdf"), width = 20, height = 7)
 cnFreq(cnData,
        genome         = "hg38",
@@ -141,7 +166,11 @@ cat("cnFreq saved\n\n")
 # cnSpec — Copy number heatmap with curated samples marked
 cat("Generating cnSpec heatmap...\n")
 
-# hg38 autosome boundaries
+# True hg38 autosome lengths, supplied so cnSpec draws each chromosome to scale and leaves
+# unsegmented regions blank rather than compressing the axis to whatever the data covers.
+# These are full reference lengths, unlike the deliberately bin-grid-aligned arm
+# coordinates in calculate_FGA_AS.R; the two serve different purposes and are not expected
+# to match.
 hg38_autosomes <- data.frame(
   chromosome = paste0("chr", 1:22),
   start = 1,

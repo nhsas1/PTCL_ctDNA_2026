@@ -3,6 +3,14 @@
 # ichorCNA's native bin-level scatter style (log2 ratio per 1Mb bin),
 # but coloured according to the CORRECTED segment calls rather than
 # the original erroneous ichorCNA calls
+#
+# These are the evidence figures for the three curation decisions. Plotting the unchanged
+# underlying log2 ratios while recolouring by the curated call makes the intervention
+# auditable: the data are ichorCNA's, only the interpretation changed, and a reader can
+# judge whether the recolouring is supported by the scatter beneath it.
+#
+# Run after the corrected seg files exist. Should be read alongside
+# PTCL_anomaly_corrections_evidence_v2.tsv, which records the reasoning per segment.
 
 library(ggplot2)
 library(dplyr)
@@ -30,7 +38,18 @@ names(chr_lengths) <- 1:22
 chr_offset <- c(0, cumsum(chr_lengths)[1:21])
 names(chr_offset) <- 1:22
 
-# Assign each 1Mb bin to the corrected segment that contains it
+# Assign each 1Mb bin to the corrected segment that contains it.
+#
+# Containment is strict: a bin must fall entirely inside a segment to inherit its call.
+# Bins straddling a segment boundary match nothing, keep NA, and are dropped by the filter
+# in plot_sample below. Segments and bins share the same 1Mb grid so this is rare, but it
+# does mean the plotted bin count can be lower than the number read from file - the count
+# reported at the end is after this filtering.
+#
+# The alternative, assigning by midpoint overlap, would retain boundary bins but would
+# attribute a bin spanning a breakpoint entirely to one side of it. Strict containment was
+# kept because these are curation-review figures, where showing a boundary bin under the
+# wrong call is worse than omitting it.
 assign_bin_calls <- function(bins, seg) {
   bins$corrected_call <- NA_character_
   for (i in 1:nrow(seg)) {
@@ -62,6 +81,9 @@ plot_sample <- function(sample_id) {
   bins <- bins %>%
     mutate(
       x_pos = chr_offset[chr] + (start + end) / 2,
+      # ichorCNA call codes. HOMD (homozygous deletion) has no branch because ichorCNA was
+      # run with --includeHOMD False, so it cannot appear; anything unrecognised falls
+      # through to grey and would be visible as an uncoloured band if that ever changed.
       point_colour = case_when(
         corrected_call == "HETD" ~ "#2166AC",
         corrected_call == "NEUT" ~ "grey55",
@@ -74,6 +96,9 @@ plot_sample <- function(sample_id) {
   chr_mid <- chr_offset + chr_lengths / 2
   chr_boundaries <- cumsum(chr_lengths)
 
+  # Symmetric y-axis about zero. An asymmetric axis would visually exaggerate whichever of
+  # gain or loss happened to have the larger range, which matters here because these
+  # figures are being used to justify calls in the opposite direction.
   y_range <- range(bins$log2_TNratio_corrected, na.rm = TRUE)
   y_limit <- max(abs(y_range)) * 1.1
 
