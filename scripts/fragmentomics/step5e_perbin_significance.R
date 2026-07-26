@@ -21,6 +21,22 @@ for (i in seq_len(nrow(bins))) {
     results <- rbind(results, data.frame(chr = bins$chr[i], bin_start = bins$bin_start[i], p_value = p))
 }
 
+# BH across all tested bins in one family, applied once. This is the right scope: the
+# hypothesis is "is any bin different between groups", so the correction must span every
+# bin tested, not each chromosome separately.
+#
+# TWO THINGS TO STATE WHEN REPORTING THESE p-VALUES:
+#
+# 1. What is being tested is not what a reader will assume. z_ratio is z-scored WITHIN
+#    sample across bins, so every sample is forced to mean 0 and sd 1. That deliberately
+#    removes each sample's overall short:long level - which is precisely the signal steps 3
+#    and 4 found. This step therefore tests regional deviation from a sample's own
+#    genome-wide average, not absolute fragmentation. It is a legitimate DELFI-shape
+#    question, but it is a different question, and the within-sample constraint also means
+#    the bins are not independent as the per-bin model assumes.
+#
+# 2. These p-values are downstream of the z-score correction in step5d. Any result computed
+#    before that fix must be regenerated; see RERUN_REQUIRED.md.
 results$p_adj <- p.adjust(results$p_value, method = "BH")
 results <- results[order(results$p_value), ]
 

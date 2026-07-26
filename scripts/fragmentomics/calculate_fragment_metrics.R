@@ -61,12 +61,24 @@ calc_metrics <- function(hist_path) {
                     basename(hist_path), max_len))
     }
 
+    # Order-statistic median from the cumulative count, not an interpolated one. With
+    # millions of observations per sample the difference is at most 1bp.
     cum <- cumsum(h$count)
     median_idx <- which(cum >= total / 2)[1]
     median_len <- h$fragment_length[median_idx]
 
+    # Modal length from the raw 1bp histogram, with no smoothing. Note this metric takes
+    # only about six distinct values across the whole cohort (165-171bp), so every
+    # downstream test on it is heavily tie-dominated and its p-values are approximations.
     peak_len <- h$fragment_length[which.max(h$count)]
 
+    # DELFI windows (Cristiano et al. 2019): 100-150bp short, 151-220bp long. Contiguous,
+    # no gap and no overlap, and identical to the definitions used in the genome-wide
+    # binning script and quoted on the figures.
+    #
+    # The biology: mononucleosomal cfDNA peaks near 167bp. Tumour-derived fragments are
+    # systematically shorter, so a rising short:long ratio is the expected signature of
+    # increasing tumour content, which is what step 4 tests against ichorCNA tumour fraction.
     short_count <- sum(h$count[h$fragment_length >= 100 & h$fragment_length <= 150])
     long_count <- sum(h$count[h$fragment_length >= 151 & h$fragment_length <= 220])
     sl_ratio <- if (long_count > 0) short_count / long_count else NA

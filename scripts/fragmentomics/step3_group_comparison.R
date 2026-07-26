@@ -69,6 +69,17 @@ for (metric in metric_cols) {
             p_value = kw$p.value, p_adjusted = NA
         ))
 
+        # Pairwise Wilcoxon runs unconditionally, without gate-keeping on the omnibus
+        # result. long_fragment_fraction therefore gets three pairwise tests and three
+        # adjusted p-values despite its Kruskal-Wallis p of 0.20. That inflates the family
+        # relative to a protected approach, where pairwise tests follow only a significant
+        # omnibus. Not changed, since the adjusted values are reported and none of the
+        # long_fragment_fraction pairs is significant, but worth a Methods sentence.
+        #
+        # suppressWarnings below hides "cannot compute exact p-value with ties". Every one
+        # of these tests has ties, so all are normal approximations - most severely for
+        # peak_fragment_length, which takes about six distinct values across 34 samples.
+        # kruskal.test applies its own tie correction, so the omnibus results are fine.
         group_levels <- levels(df$group)
         pairs <- combn(group_levels, 2, simplify = FALSE)
         raw_p <- sapply(pairs, function(p) {
