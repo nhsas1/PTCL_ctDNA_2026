@@ -8,19 +8,14 @@
 #SBATCH --output=/scratch/alice/n/nhsas1/PTCL/ichorCNA/logs/readCounter_%a_%j.out
 #SBATCH --error=/scratch/alice/n/nhsas1/PTCL/ichorCNA/logs/readCounter_%a_%j.err
 
-# ============================================================
 # readCounter — All remaining 20 samples (SLURM array job)
-# B1_S01 already done — this covers B1_S02 to B2_S16
-# Each array task processes ONE sample independently
-# SLURM_ARRAY_TASK_ID tells this script which sample to process
-# ============================================================
 
 echo "Array task:  $SLURM_ARRAY_TASK_ID"
 echo "Job started: $(date)"
 echo "Node:        $HOSTNAME"
 echo ""
 
-# --- Tool and shared paths ---
+# Tool and shared paths
 READCOUNTER=/scratch/alice/n/nhsas1/PTCL/hmmcopy_utils/bin/readCounter
 BAM_DIR=/scratch/alice/n/nhsas1/PTCL/BAMs
 WIG_DIR=/scratch/alice/n/nhsas1/PTCL/ichorCNA/wig
@@ -28,8 +23,8 @@ CHROMOSOMES="chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr1
 WINDOW=1000000
 QUALITY=20
 
-# --- Sample list (array index 1-20 maps to samples B1_S02 to B2_S16)
-# B1_S01 is already done — excluded from this array
+# Sample list (array index 1-20 maps to samples B1_S02 to B2_S16)
+# B1_S01 is already done so it is  excluded from this array
 declare -A SAMPLES
 SAMPLES[1]="B1_S02"
 SAMPLES[2]="B1_S03"
@@ -74,7 +69,7 @@ BAMS[18]="LB_20251210_PRE_6_EKDL250035530-1A_237N3GLT4_L5_dD_SI.bam"
 BAMS[19]="LB_20251210_PRE_7_EKDL250035531-1A_237N3GLT4_L5_dD_SI.bam"
 BAMS[20]="LB_20251210_PRE_8_EKDL250035532-1A_237N3GLT4_L5_dD_SI.bam"
 
-# --- Get this task's sample ---
+# Get this task's sample
 SAMPLE_ID=${SAMPLES[$SLURM_ARRAY_TASK_ID]}
 BAM_FILE="$BAM_DIR/${BAMS[$SLURM_ARRAY_TASK_ID]}"
 WIG_OUT="$WIG_DIR/${SAMPLE_ID}.wig"
@@ -84,7 +79,7 @@ echo "BAM file:   $BAM_FILE"
 echo "WIG output: $WIG_OUT"
 echo ""
 
-# --- Check BAM exists ---
+# Check BAM exists 
 if [ ! -f "$BAM_FILE" ]; then
     echo "ERROR: BAM file not found: $BAM_FILE"
     exit 1
@@ -95,14 +90,14 @@ if [ ! -f "${BAM_FILE}.bai" ]; then
     exit 1
 fi
 
-# --- Skip if WIG already exists and is not empty ---
+#  Skip if WIG already exists and is not empty 
 if [ -s "$WIG_OUT" ]; then
     echo "WIG file already exists and is non-empty — skipping"
     echo "Delete $WIG_OUT to force rerun"
     exit 0
 fi
 
-# --- Run readCounter ---
+#  Run readCounter 
 echo "Running readCounter..."
 $READCOUNTER \
     --window $WINDOW \
@@ -110,7 +105,7 @@ $READCOUNTER \
     --chromosome "$CHROMOSOMES" \
     "$BAM_FILE" > "$WIG_OUT"
 
-# --- Verify output ---
+#  Verify output 
 if [ -s "$WIG_OUT" ]; then
     LINES=$(wc -l < "$WIG_OUT")
     echo "SUCCESS: $SAMPLE_ID — WIG file created ($LINES lines)"
