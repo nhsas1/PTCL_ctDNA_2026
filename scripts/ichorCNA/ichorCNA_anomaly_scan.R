@@ -1,9 +1,9 @@
 
 # Anomaly Types Detected:
-#   A — GAIN call with negative seg.median.logR
-#   B — HETD (loss) call with positive seg.median.logR
-#   C — logR_Copy_Number and Corrected_Copy_Number strongly disagree (>1.0)
-#   D — HLAMP call with logR below TF-adjusted expected minimum
+#   A :  GAIN call with negative seg.median.logR
+#   B :  HETD (loss) call with positive seg.median.logR
+#   C :  logR_Copy_Number and Corrected_Copy_Number strongly disagree (>1.0)
+#   D : HLAMP call with logR below TF-adjusted expected minimum
 #
 # Key concept for Type D:
 #   The expected logR for any copy number state is not fixed — it scales with
@@ -17,29 +17,29 @@
 #   2. ichorCNA_anomaly_summary.csv   — per-sample count of each anomaly type
 #   3. ichorCNA_expected_logR.csv     — expected logR values per CN state per sample
 #   4. Console report                 — readable summary for supervisor meeting
-#
+
 
 
 library(dplyr)
 library(readr)
 
 
-# 1. CONFIGURATION — Edit these paths to match your ALICE setup
+# 1. CONFIGURATION 
 
-# --- Paths for seg.txt files (two locations: Batch 1+2, Batch 3)
+#  Paths for seg.txt files (two locations: Batch 1+2, Batch 3)
 SEG_DIR_B1B2  <- "/scratch/alice/n/nhsas1/PTCL/ichorCNA/output/"
 SEG_DIR_B3    <- "/scratch/alice/n/nhsas1/PTCL/ichorCNA/output_batch3/"
 
-# --- ichorCNA summary file (contains TF, ploidy, MAD per sample)
+#  ichorCNA summary file (contains TF, ploidy, MAD per sample)
 SUMMARY_FILE  <- "/scratch/alice/n/nhsas1/ptcl_ctdna_thesis/results/ichorCNA/ichorCNA_summary.csv"
 
-# --- Output directory for anomaly report files
+# Output directory for anomaly report files
 OUTPUT_DIR    <- "/scratch/alice/n/nhsas1/PTCL/ichorCNA/anomaly_report/"
 
-# --- Samples to exclude (re-runs or non-canonical)
+#  Samples to exclude (re-runs or non-canonical)
 EXCLUDE_SAMPLES <- c("B2_S05_500kb", "B2_S08_500kb", "B2_S08_ploidy234")
 
-# --- Anomaly detection parameters
+# Anomaly detection parameters
 # Type D: HLAMP threshold factor
 #   A segment is flagged if: seg.median.logR < expected_logR_HLAMP * HLAMP_FACTOR
 #   0.5 means "logR is less than half of what physics predicts for this TF"
