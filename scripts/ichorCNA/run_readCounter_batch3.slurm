@@ -8,17 +8,17 @@
 #SBATCH --output=/scratch/alice/n/nhsas1/PTCL/ichorCNA/logs/readCounter_B3_%a_%j.out
 #SBATCH --error=/scratch/alice/n/nhsas1/PTCL/ichorCNA/logs/readCounter_B3_%a_%j.err
 
-# ============================================================
-# readCounter — Batch 3 (13 new samples)
+# 
+# readCounter : Batch 3 (13 new samples)
 # Each array task processes ONE sample independently
-# ============================================================
+
 
 echo "Array task:  $SLURM_ARRAY_TASK_ID"
 echo "Job started: $(date)"
 echo "Node:        $HOSTNAME"
 echo ""
 
-# --- Tool and shared paths ---
+# Tool and shared paths 
 READCOUNTER=/scratch/alice/n/nhsas1/PTCL/hmmcopy_utils/bin/readCounter
 BAM_DIR=/scratch/alice/n/nhsas1/PTCL/BAMs_batch3
 WIG_DIR=/scratch/alice/n/nhsas1/PTCL/ichorCNA/wig_batch3
@@ -26,10 +26,10 @@ CHROMOSOMES="chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr1
 WINDOW=1000000
 QUALITY=20
 
-# --- Create WIG output directory if not present ---
+# Create WIG output directory if not present 
 mkdir -p "$WIG_DIR"
 
-# --- Sample list ---
+# Sample list
 declare -A SAMPLES
 SAMPLES[1]="B3_S01"
 SAMPLES[2]="B3_S02"
@@ -60,7 +60,7 @@ BAMS[11]="LB_241114_6_SI.bam"
 BAMS[12]="LB_241114_7_SI.bam"
 BAMS[13]="LB_241114_8_SI.bam"
 
-# --- Get this task's sample ---
+# Get this task's sample 
 SAMPLE_ID=${SAMPLES[$SLURM_ARRAY_TASK_ID]}
 BAM_FILE="$BAM_DIR/${BAMS[$SLURM_ARRAY_TASK_ID]}"
 WIG_OUT="$WIG_DIR/${SAMPLE_ID}.wig"
@@ -70,7 +70,7 @@ echo "BAM file:   $BAM_FILE"
 echo "WIG output: $WIG_OUT"
 echo ""
 
-# --- Check BAM exists ---
+# Check BAM exists
 if [ ! -f "$BAM_FILE" ]; then
     echo "ERROR: BAM file not found: $BAM_FILE"
     exit 1
@@ -81,14 +81,14 @@ if [ ! -f "${BAM_FILE}.bai" ]; then
     exit 1
 fi
 
-# --- Skip if WIG already exists and is not empty ---
+# Skip if WIG already exists and is not empty 
 if [ -s "$WIG_OUT" ]; then
     echo "WIG file already exists and is non-empty — skipping"
     echo "Delete $WIG_OUT to force rerun"
     exit 0
 fi
 
-# --- Run readCounter ---
+# Run readCounter 
 echo "Running readCounter..."
 $READCOUNTER \
     --window $WINDOW \
@@ -96,7 +96,7 @@ $READCOUNTER \
     --chromosome "$CHROMOSOMES" \
     "$BAM_FILE" > "$WIG_OUT"
 
-# --- Verify output ---
+#  Verify output 
 if [ -s "$WIG_OUT" ]; then
     LINES=$(wc -l < "$WIG_OUT")
     echo "SUCCESS: $SAMPLE_ID — WIG file created ($LINES lines)"
