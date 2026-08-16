@@ -3,7 +3,6 @@ library(QDNAseq)
 library(Biobase)
 pdf(NULL)
 
-# ── Only these 3 lines differ from original export_rascal_input.R ─
 BINS_FILE  <- "/scratch/alice/n/nhsas1/PTCL/scripts/hg38_bins_15kb_annotated.rds"
 OUTPUT_DIR <- "/scratch/alice/n/nhsas1/PTCL/RASCAL/input_batch3"
 METADATA   <- "/scratch/alice/n/nhsas1/PTCL/scripts/sample_metadata_batch3.csv"
