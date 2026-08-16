@@ -1,14 +1,6 @@
-# ============================================================
-# RASCAL Batch Analysis — Batch 3 (13 Samples)
-# PTCL ctDNA Thesis | RASCAL v0.7.0 | R 4.3.1 | ALICE HPC
+
+# RASCAL Batch Analysis :  Batch 3 (13 Samples)
 # Based on: run_rascal_batch.R (Batches 1 and 2)
-# Changes from original:
-#   - QDNASEQ_DIR points to QDNAseq_output_batch3
-#   - OUTPUT_DIR points to RASCAL/output_batch3
-#   - ichorcna_tf updated with Batch 3 TF values from ichorCNA
-#   - all_samples updated to 13 Batch 3 sample IDs
-# All other parameters identical to original pipeline.
-# ============================================================
 
 .libPaths(c("/home/n/nhsas1/R/library", .libPaths()))
 
@@ -16,12 +8,12 @@ library(rascal)
 library(dplyr)
 library(ggplot2)
 
-# ── Global paths ─────────────────────────────────────────────
+#  paths 
 QDNASEQ_DIR <- "/scratch/alice/n/nhsas1/PTCL/QDNAseq_output_batch3"
 OUTPUT_DIR  <- "/scratch/alice/n/nhsas1/PTCL/RASCAL/output_batch3"
 dir.create(OUTPUT_DIR, recursive = TRUE, showWarnings = FALSE)
 
-# ── ichorCNA tumour fraction reference — Batch 3 ─────────────
+#  ichorCNA tumour fraction reference  Batch 3 
 ichorcna_tf <- data.frame(
   sample = c("B3_S01","B3_S02","B3_S03","B3_S04","B3_S05",
              "B3_S06","B3_S07","B3_S08","B3_S09","B3_S10",
@@ -32,7 +24,7 @@ ichorcna_tf <- data.frame(
   stringsAsFactors = FALSE
 )
 
-# ── Sample list — all 13 Batch 3 ─────────────────────────────
+# Sample list — all 13 Batch 3 
 all_samples <- c(
   "B3_S01","B3_S02","B3_S03","B3_S04","B3_S05",
   "B3_S06","B3_S07","B3_S08","B3_S09","B3_S10",
@@ -45,12 +37,10 @@ cat("═════════════════════════
 cat("Samples to process:", length(all_samples), "\n")
 cat("Output directory:", OUTPUT_DIR, "\n\n")
 
-# ── Summary collector ────────────────────────────────────────
+# Summary collector 
 summary_rows <- list()
 
-# ════════════════════════════════════════════════════════════
 # MAIN LOOP
-# ════════════════════════════════════════════════════════════
 for (SAMPLE_ID in all_samples) {
 
   cat("───────────────────────────────────────────────────────\n")
@@ -321,9 +311,9 @@ for (SAMPLE_ID in all_samples) {
   cat("  Completed:", SAMPLE_ID, "— Status:", result$status, "\n\n")
 }
 
-# ════════════════════════════════════════════════════════════
+
 # MASTER SUMMARY
-# ════════════════════════════════════════════════════════════
+
 cat("═══════════════════════════════════════════════════════\n")
 cat("Building master summary...\n")
 
