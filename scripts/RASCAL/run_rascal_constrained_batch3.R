@@ -1,16 +1,10 @@
-# ============================================================
-# RASCAL Constrained Run — Batch 3 (3 Samples)
-# PTCL ctDNA Thesis | RASCAL v0.7.0 | R 4.3.1 | ALICE HPC
+# 
+# RASCAL Constrained Run:  Batch 3 (3 Samples)
 # Samples: B3_S06, B3_S08, B3_S09
 # Reason: Unconstrained run returned boundary artefacts
 #         (ploidy=1.5 boundary hit) or high TF discordance
 # Cellularity search restricted to ichorCNA TF ± 0.15
 # Based on: run_rascal_constrained.R (Batches 1 and 2)
-# Changes from original:
-#   - QDNASEQ_DIR points to QDNAseq_output_batch3
-#   - OUTPUT_DIR points to RASCAL/output_batch3_constrained
-#   - sample_table updated with 3 Batch 3 samples only
-# ============================================================
 
 .libPaths(c("/home/n/nhsas1/R/library", .libPaths()))
 
@@ -18,12 +12,12 @@ library(rascal)
 library(dplyr)
 library(ggplot2)
 
-# ── Paths ────────────────────────────────────────────────────
+# Paths 
 QDNASEQ_DIR <- "/scratch/alice/n/nhsas1/PTCL/QDNAseq_output_batch3"
 OUTPUT_DIR  <- "/scratch/alice/n/nhsas1/PTCL/RASCAL/output_batch3_constrained"
 dir.create(OUTPUT_DIR, recursive = TRUE, showWarnings = FALSE)
 
-# ── Sample table — 3 Batch 3 samples ────────────────────────
+# ── Sample table — 3 Batch 3 samples 
 # ichorCNA values from verified params files
 # Unconstrained RASCAL values from Run 1 summary CSV
 sample_table <- data.frame(
@@ -36,7 +30,7 @@ sample_table <- data.frame(
   stringsAsFactors = FALSE
 )
 
-# ── Constraint width ─────────────────────────────────────────
+#  Constraint width 
 CONSTRAINT <- 0.15   # search TF ± 0.15
 
 cat("═══════════════════════════════════════════════════════\n")
@@ -45,12 +39,12 @@ cat("Cellularity window: ichorCNA TF ±", CONSTRAINT, "\n")
 cat("Output:", OUTPUT_DIR, "\n")
 cat("═══════════════════════════════════════════════════════\n\n")
 
-# ── Summary collector ────────────────────────────────────────
+#  Summary collector 
 summary_rows <- list()
 
-# ════════════════════════════════════════════════════════════
+
 # MAIN LOOP
-# ════════════════════════════════════════════════════════════
+
 for (i in 1:nrow(sample_table)) {
 
   SAMPLE_ID    <- sample_table$sample[i]
@@ -362,9 +356,9 @@ for (i in 1:nrow(sample_table)) {
   cat("  Completed:", SAMPLE_ID, "\n\n")
 }
 
-# ════════════════════════════════════════════════════════════
+
 # MASTER COMPARISON TABLE
-# ════════════════════════════════════════════════════════════
+
 cat("═══════════════════════════════════════════════════════\n")
 cat("Building comparison table...\n")
 
