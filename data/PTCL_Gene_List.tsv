@@ -1,9 +1,18 @@
-# PTCL Gene List for ctDNA / Shallow WGS Analysis
-# Thesis: Shallow WGS of ctDNA in T-Cell Lymphoma — Copy Number Variations and Fragmentomics
+# Aim and Method: This list was used as a biological plausibility
+layer during manual curation of ichorCNA calls; candidate genes overlapping
+corrected segments. this was curated from two sources: (i) published PTCL
+literature reporting recurrently mutated and copy-number-altered genes across PTCL
+subtypes, including landscape studies of molecular driver events (Heavican et al., 2019;
+Laginestra et al., 2020; de Leval et al., 2022); and (ii) the MSK-IMPACT PTCL cohort
+(Johnson, Ganesan and Epstein-Peterson, 2023) accessed via cBioPortal (Cerami, Gao and
+Dogrusoz, 2012). Gene symbols were annotated with Entrez Gene identifiers cross-
+referenced against the OncoKB Cancer Gene List (Chakravarty et al., 2017) and
+supplemented from NCBI Gene where absent. 
+
 # Entrez Gene IDs: OncoKB Cancer Gene List (oncokb.org, v05/29/2026); supplemented from NCBI Gene
 # MSK MTNN 2022: cBioPortal (cbioportal.org/study/summary?id=mtnn_msk_2022), n=132 PTCL patients
 # Total genes: 64 | Generated: June 2025
-#
+
 Gene_Symbol	Entrez_Gene_ID	Gene_Name	Functional_Category	Data_Status	Data_Source	Mutation_Frequency_MSK_MTNN_2022	CNA_Type	CNA_Cytoband	PTCL_Subtype	Alteration_Type	Pathway_Function	Biological_Significance	Literature_Reference	Entrez_ID_Source
 TET2	54790	TET methylcytosine dioxygenase 2	Epigenetic regulator	Confirmed - Mutated Gene	cBioPortal: Mutated Genes; MSK MTNN 2022; cbioportal.org/study/summary?id=mtnn_msk_2022	51.5% (68/132)	—	—	AITL (83%); PTCL-NOS; ATLL	Loss-of-function mutation	DNA hydroxymethylation	Founder mutation; disrupts 5mC to 5hmC; co-operates with RHOA G17V in AITL	Cairns et al. Blood 2012;120(5):1026; Odejide et al. Blood 2014;123(9):1293; Wang et al. Cell Rep Med 2024;5(2):101416	OncoKB Cancer Gene List v05/29/2026
 DNMT3A	1788	DNA methyltransferase 3 alpha	Epigenetic regulator	Confirmed - Mutated Gene	cBioPortal: Mutated Genes; MSK MTNN 2022; cbioportal.org/study/summary?id=mtnn_msk_2022	18.9% (25/132)	—	—	AITL; PTCL-NOS	Loss-of-function mutation	DNA methylation	De novo DNA methylation; co-mutated with TET2; CHIP marker	Couronne et al. N Engl J Med 2012;366(1):95; Sakata-Yanagimoto et al. Nat Genet 2014;46(2):171; Wang et al. Cell Rep Med 2024;5(2):101416	OncoKB Cancer Gene List v05/29/2026
