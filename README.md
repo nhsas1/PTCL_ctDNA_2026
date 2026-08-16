@@ -13,7 +13,7 @@ Analysis pipeline for plasma sWGS ctDNA profiling in peripheral T-cell lymphoma 
 - **CNA profiling** : tumour fraction estimation (ichorCNA), manual curation, absolute copy number scaling (RASCAL), recurrent CNA detection (GISTIC2), arm-level aneuploidy scoring (FGA/AS)
 - **Fragmentomics** :  fragment-length metrics, tumour fraction correlation
 
-A sub-analysis compares plasma ctDNA against matched FFPE tissue sWGS for 15 evaluable patient pairs.
+A sub-analysis compares plasma ctDNA against matched FFPE tissue sWGS for 16 samples of 15 evaluable patient pairs.
 
 Raw BAM files are not included (patient-level data).
 
@@ -27,7 +27,7 @@ Raw BAM files are not included (patient-level data).
 | Sequencing | Illumina NovaSeq, GRCh38 |
 | CNA cohort | n=20 (TF ≥3%; 13 below detection floor, 1 excluded for unresolvable ploidy ambiguity) |
 | Fragmentomics cohort | n=33 (B2_S11 excluded: outlier across fragment-length metrics) |
-| Matched FFPE pairs | 16 total; 14 evaluable (1 excluded: degraded library |
+| Matched FFPE pairs | 16 total; 15 evaluable (1 excluded: degraded library |
 
 
 
@@ -43,10 +43,18 @@ PTCL_ctDNA_2026/
 │   ├── FGA_AS/          # Fraction genome altered and aneuploidy scoring
 │   ├── GenVisR/         # Cohort CNA frequency visualisation
 │   └── fragmentomics/   # Fragment-length metrics
-├── results/             # Summary tables and figures per analysis arm
-├── QC_results/          # SAMtools flagstat output for all 34 plasma and 16 FFPE BAMs
+├── results/
+│   ├── GISTIC/          # GISTIC2 n=20 output: all_lesions, del_genes, frequency plots, input seg file
+│   ├── GenVisR/         # Cohort CNA frequency and per-sample spectrum plots
+│   ├── FGA_AS/          # FGA and aneuploidy score tables and figures
+│   │   └── GISTIC_correlation/  # FGA/AS vs GISTIC2 deletion burden correlation
+│   ├── ichorCNA/
+│   │   ├── seg_files/           # ichorCNA seg.txt output, all 34 samples
+│   │   ├── seg_files_corrected/ # Manually corrected seg files (B2_S08, B2_S15, B3_S09)
+│   │   └── ichorCNA_params/     # Per-sample params.txt (TF and ploidy estimates)
+│   └── PTCL_ctDNA_results_summary.xlsx  # Integrated results across all analysis arms
 ├── data/
-│   └── PTCL_Gene_List.xlsx  # Curated PTCL driver gene list (literature + cBioPortal)
+│   └── PTCL_Gene_List.tsv       # Curated PTCL driver gene list (literature + cBioPortal)
 └── README.md
 ```
 
@@ -94,7 +102,7 @@ All scripts were run on the University of Leicester ALICE HPC cluster (Rocky Lin
 
 **Fragmentomics:** Three metrics correlated significantly with tumour fraction (Spearman, BH-corrected): median fragment length (ρ=−0.515, p=0.0022), short:long ratio (ρ=+0.479, p=0.0053), and peak length (ρ=−0.459, p=0.0073), supporting the utility of fragment-length profiling as a non-invasive tumour burden proxy.
 
-**FFPE:** 9/14 evaluable pairs concordant (64%); tissue sWGS recovered ctDNA signal in 4/5 patients below the plasma detection floor.
+**FFPE:** 9/15 evaluable pairs concordant (60%); tissue sWGS recovered ctDNA signal in 4/5 patients below the plasma detection floor.
 
 
 
@@ -106,7 +114,7 @@ Three ichorCNA samples required manual curation (B2_S08, B2_S15, B3_S09) and one
 
 ## Data Availability
 
-Raw BAM files are not publicly available (patient-level genomic data). The curated PTCL gene list (`data/PTCL_Gene_List.xlsx`) is compiled from published literature and cBioPortal.
+Raw BAM files are not publicly available (patient-level genomic data). The curated PTCL gene list (`data/PTCL_Gene_List.tsv`) is compiled from published literature and cBioPortal.
 
 
 
