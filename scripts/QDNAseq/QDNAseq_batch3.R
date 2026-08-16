@@ -1,21 +1,8 @@
 #!/usr/bin/env Rscript
-# ============================================================
-# PTCL ctDNA — QDNAseq CNV Pipeline — Batch 3
-# Author: Noor Shaban
-# Date: June 2026
-# Based on: QDNAseq_ALICE_automated.R (Batches 1 and 2)
-# Changes from original:
-#   - METADATA points to sample_metadata_batch3.csv (13 samples only)
-#   - OUTPUT_DIR points to QDNAseq_output_batch3 (separate from B1/B2)
-#   - Duplicate handling note: Batch 3 BAMs have no MarkDuplicates in
-#     pipeline — no duplicate flags present. QDNAseq duplicate filter
-#     has no reads to exclude. Documented but not corrected.
-# All other parameters identical to original pipeline.
-# ============================================================
 
 .libPaths(c("/home/n/nhsas1/R/library", .libPaths()))
 
-# ── Configuration — only these 3 lines differ from original ─
+# Configuration 
 BINS_FILE  <- "/scratch/alice/n/nhsas1/PTCL/scripts/hg38_bins_15kb_annotated.rds"
 OUTPUT_DIR <- "/scratch/alice/n/nhsas1/PTCL/QDNAseq_output_batch3"
 METADATA   <- "/scratch/alice/n/nhsas1/PTCL/scripts/sample_metadata_batch3.csv"
@@ -25,7 +12,7 @@ suppressPackageStartupMessages({
   library(Biobase)
 })
 
-# ── Required: silent graphics device for SLURM nodes ────────
+#  Required: silent graphics device for SLURM nodes 
 pdf(NULL)
 
 cat("=== QDNAseq Pipeline — Batch 3 ===\n")
