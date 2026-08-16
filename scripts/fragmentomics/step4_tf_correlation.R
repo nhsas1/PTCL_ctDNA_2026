@@ -1,4 +1,4 @@
-# Step 4: correlate fragmentomic metrics with ichorCNA tumour fraction
+# correlate fragmentomic metrics with ichorCNA tumour fraction
 # Spearman correlation (rank-based), consistent with Step 3's non-parametric
 # approach. Every correlation run twice: all 34 samples (primary) and
 # excluding B2_S11 (sensitivity), per agreed methodology.
