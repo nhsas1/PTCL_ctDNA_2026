@@ -81,11 +81,10 @@ All scripts were run on the University of Leicester ALICE HPC cluster (Rocky Lin
 7. `scripts/GenVisR/plot_cnFreq_cohort.R` — cohort CNA frequency plot
 
 ### Fragmentomics Arm
-1. `scripts/fragmentomics/run_batch3_markdup.slurm` — Picard MarkDuplicates (Batch 3 only)
-2. `scripts/fragmentomics/run_fragment_extraction.slurm` — fragment-length histograms
-3. `scripts/fragmentomics/calculate_fragment_metrics.R` — per-sample metrics
-4. `scripts/fragmentomics/group_comparison.R` — Kruskal-Wallis, BH-corrected
-5. `scripts/fragmentomics/tf_correlation.R` — Spearman TF correlation, BH-corrected
+1. `scripts/fragmentomics/run_batch3_markdup.slurm` : Picard MarkDuplicates (Batch 3 only)
+2. `scripts/fragmentomics/run_fragment_extraction.slurm` : fragment-length histograms
+3. `scripts/fragmentomics/calculate_fragment_metrics.R` : per-sample metrics
+4. `scripts/fragmentomics/tf_correlation.R` : Spearman TF correlation, BH-corrected
 
 
 
