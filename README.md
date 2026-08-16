@@ -2,7 +2,7 @@
 
 **Thesis:** Shallow whole genome sequencing of ctDNA in T-cell lymphoma: copy number alterations and fragmentomics  
 **Student:** Noor Shaban
-**Institution:** University of Leicester — MSc Bioinformatics
+**Institution:** University of Leicester - MSc Bioinformatics - 
 
 
 
@@ -10,8 +10,8 @@
 
 Analysis pipeline for plasma sWGS ctDNA profiling in peripheral T-cell lymphoma (PTCL), across two analytical arms:
 
-- **CNA profiling** — tumour fraction estimation (ichorCNA), manual curation, absolute copy number scaling (RASCAL), recurrent CNA detection (GISTIC2), arm-level aneuploidy scoring (FGA/AS)
-- **Fragmentomics** — fragment-length metrics, tumour fraction correlation
+- **CNA profiling** : tumour fraction estimation (ichorCNA), manual curation, absolute copy number scaling (RASCAL), recurrent CNA detection (GISTIC2), arm-level aneuploidy scoring (FGA/AS)
+- **Fragmentomics** :  fragment-length metrics, tumour fraction correlation
 
 A sub-analysis compares plasma ctDNA against matched FFPE tissue sWGS for 15 evaluable patient pairs.
 
